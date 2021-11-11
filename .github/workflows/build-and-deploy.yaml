@@ -1,0 +1,61 @@
+name: Build and Dispatch Event to GitOps Repository
+
+on:
+  workflow_call:
+    inputs:
+      cluster:
+        required: true
+        type: string
+    secrets:
+      pushToken:
+        required: true
+      dispatchToken:
+        required: true
+
+jobs:
+  build_and_dispatch:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.pushToken }}
+
+    - name: Setup Docker Buildkit
+      uses: docker/setup-buildx-action@v1
+      id: buildx
+      with:
+        install: true
+
+    - name: Get branch name
+      if: github.event_name != 'pull_request'
+      shell: bash
+      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+
+    - name: Extrapolate image name
+      run: echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }}" >> $GITHUB_ENV
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag $IMAGE_NAME
+
+    - name: Build the Docker image & tag it
+      run: docker build --tag $(echo $IMAGE_NAME:${GITHUB_SHA::8}) --tag $(echo $IMAGE_NAME:latest) .
+
+    - name: Push the image to GitHub registry
+      run: |
+        docker push $IMAGE_NAME:${GITHUB_SHA::8}
+        echo "IMAGE_NAME=$IMAGE_NAME:${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+    - name: send dispatch
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.CROSS_REPO_TOKEN }}
+        repository: firefliesai/k8s-${{ inputs.cluster }}
+        event-type: deployService
+        client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME }}", "branch": "${{ env.BRANCH_NAME }}" }'
