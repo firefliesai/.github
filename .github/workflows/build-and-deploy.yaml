@@ -39,7 +39,7 @@ jobs:
       run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
 
     - name: Extrapolate image name
-      run: echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }}" >> $GITHUB_ENV
+      run: echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})" >> $GITHUB_ENV
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $IMAGE_NAME
@@ -55,7 +55,7 @@ jobs:
     - name: send dispatch
       uses: peter-evans/repository-dispatch@v1
       with:
-        token: ${{ secrets.CROSS_REPO_TOKEN }}
+        token: ${{ secrets.dispatchToken }}
         repository: firefliesai/k8s-${{ inputs.cluster }}
         event-type: deployService
         client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME }}", "branch": "${{ env.BRANCH_NAME }}" }'
