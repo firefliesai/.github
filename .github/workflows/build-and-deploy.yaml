@@ -33,22 +33,22 @@ jobs:
       with:
         install: true
 
-    - name: Get branch name
+    - name: Extrapolate Environment Variables
       shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-
-    - name: Extrapolate image name
-      run: echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})" >> $GITHUB_ENV
+      run: |
+        echo "Calculating BRANCH_NAME and IMAGE_NAME"
+        echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+        echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})" >> $GITHUB_ENV
+        echo "IMAGE_NAME_WITH_SHA=$IMAGE_NAME:${GITHUB_SHA::8}" >> $GITHUB_ENV
 
     - name: Build the Docker image
       run: |
-        docker build . --file Dockerfile --tag $(echo $IMAGE_NAME:${GITHUB_SHA::8}) --tag $(echo $IMAGE_NAME:latest) --push
-        echo "IMAGE_NAME=$IMAGE_NAME:${GITHUB_SHA::8}" >> $GITHUB_ENV
+        docker build . --file Dockerfile --tag $(echo $IMAGE_NAME_WITH_SHA) --tag $(echo $IMAGE_NAME:latest) --push
 
-    - name: send dispatch
+    - name: Dispatch Event to k8s-${{ inputs.cluster }}
       uses: peter-evans/repository-dispatch@v1
       with:
         token: ${{ secrets.dispatchToken }}
         repository: firefliesai/k8s-${{ inputs.cluster }}
         event-type: deployService
-        client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME }}", "branch": "${{ env.BRANCH_NAME }}" }'
+        client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME_WITH_SHA }}", "branch": "${{ env.BRANCH_NAME }}" }'
