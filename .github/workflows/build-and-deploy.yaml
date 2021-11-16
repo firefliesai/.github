@@ -1,0 +1,55 @@
+name: Build and Dispatch Event to GitOps Repository
+
+on:
+  workflow_call:
+    inputs:
+      cluster:
+        required: true
+        type: string
+    secrets:
+      pushToken:
+        required: true
+      dispatchToken:
+        required: true
+
+jobs:
+  build_and_dispatch:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.pushToken }}
+
+    - name: Setup Docker Buildkit
+      uses: docker/setup-buildx-action@v1
+      id: buildx
+      with:
+        install: true
+
+    - name: Extrapolate Environment Variables
+      shell: bash
+      run: |
+        echo "Calculating BRANCH_NAME and IMAGE_NAME"
+        IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
+        echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+        echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
+        echo "IMAGE_NAME_WITH_SHA=$IMG:${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+    - name: Build the Docker image
+      run: |
+        docker build . --file Dockerfile --tag $(echo $IMAGE_NAME_WITH_SHA) --tag $(echo $IMAGE_NAME:latest) --push
+
+    - name: Dispatch Event to k8s-${{ inputs.cluster }}
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.dispatchToken }}
+        repository: firefliesai/k8s-${{ inputs.cluster }}
+        event-type: deployService
+        client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME_WITH_SHA }}", "branch": "${{ env.BRANCH_NAME }}" }'
