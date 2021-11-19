@@ -1,0 +1,53 @@
+name: Build and Run Structure Test
+
+on:
+  workflow_call: {}
+
+jobs:
+  build_and_dispatch:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
+
+    - name: Setup Docker Buildkit
+      uses: docker/setup-buildx-action@v1
+      id: buildx
+      with:
+        install: true
+
+    - name: Extrapolate Environment Variables
+      shell: bash
+      run: |
+        echo "Calculating BRANCH_NAME and IMAGE_NAME"
+        IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
+        echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+        echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
+        echo "IMAGE_NAME_WITH_SHA=$IMG:${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+    - name: Build the Docker image
+      run: |
+        docker build . --file Dockerfile --tag $(echo $IMAGE_NAME_WITH_SHA) --tag $(echo $IMAGE_NAME:latest) --load
+    
+    - name: Download container structure test binary
+      shell: bash
+      run: |
+        curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 && chmod +x container-structure-test-linux-amd64 && sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+        mkdir -p tests/structure
+        cat <<EOF > tests/structure/basic.yaml
+        schemaVersion: 2.0.0
+        commandTests:
+          - name: Node command available
+            command: which
+            args:
+              - node
+            expectedOutput:
+              - /usr/local/bin/node
+        EOF
+
+    - name: Runs structure test
+      shell: bash
+      run: |
+        echo "Run test against ${IMAGE_NAME_WITH_SHA}"
+        find ./tests/structure -name "*.yaml" -print0 | xargs -0 -I {} container-structure-test test --image ${IMAGE_NAME_WITH_SHA} --config {}
