@@ -50,10 +50,6 @@ jobs:
       shell: bash
       run: |
         curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 && chmod +x container-structure-test-linux-amd64 && sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
-
-    - name: Runs structure test
-      shell: bash
-      run: |
         mkdir -p tests/structure
         cat <<EOF > tests/structure/basic.yaml
         schemaVersion: 2.0.0
@@ -66,7 +62,9 @@ jobs:
               - /usr/local/bin/node
         EOF
 
-        find ./tests/structure -name "*.yaml" -exec container-structure-test test --image $IMAGE_NAME_WITH_SHA --config {} \;
+    - name: Runs structure test
+      shell: bash
+      run: find ./tests/structure -name "*.yaml" -exec container-structure-test test --image $(echo $IMAGE_NAME_WITH_SHA) --config {} \;
 
     - name: Dispatch Event to k8s-${{ inputs.cluster }}
       uses: peter-evans/repository-dispatch@v1
