@@ -44,7 +44,7 @@ jobs:
 
     - name: Build the Docker image
       run: |
-        docker build . --file Dockerfile --tag $(echo $IMAGE_NAME_WITH_SHA) --tag $(echo $IMAGE_NAME:latest) --push
+        docker build . --file Dockerfile --tag $(echo $IMAGE_NAME_WITH_SHA) --tag $(echo $IMAGE_NAME:latest) --output type=image,name=$(echo $IMAGE_NAME_WITH_SHA) --push
     
     - name: Download container structure test binary
       shell: bash
