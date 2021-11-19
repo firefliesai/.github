@@ -61,12 +61,6 @@ jobs:
               - node
             expectedOutput:
               - /usr/local/bin/node
-          - name: Node Version should be 16
-            command: node
-            args:
-              - --version
-            expectedOutput:
-              - v15
         EOF
 
     - name: Runs structure test
