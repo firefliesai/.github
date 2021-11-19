@@ -64,7 +64,9 @@ jobs:
 
     - name: Runs structure test
       shell: bash
-      run: find ./tests/structure -name "*.yaml" -exec container-structure-test test --image $(echo $IMAGE_NAME_WITH_SHA) --config {} \;
+      run: |
+        echo "Run test against ${IMAGE_NAME_WITH_SHA}"
+        find ./tests/structure -name "*.yaml" -exec container-structure-test test --image ${IMAGE_NAME_WITH_SHA} --config {} \;
 
     - name: Dispatch Event to k8s-${{ inputs.cluster }}
       uses: peter-evans/repository-dispatch@v1
