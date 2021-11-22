@@ -47,7 +47,7 @@ jobs:
         --tag $(echo $IMAGE_NAME_WITH_SHA) \
         --tag $(echo $IMAGE_NAME:latest) \
         --cache-from type=local,src=/tmp/cache \
-        --cache-to type=local,src=/tmp/cache \
+        --cache-to type=local,dest=/tmp/cache \
         --load
     
     - name: Setup Container Structure Test
