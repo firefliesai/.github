@@ -1,4 +1,4 @@
-name: Build and Run Structure Test
+name: Run Structure Test
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
         default: true
 
 jobs:
-  build_and_dispatch:
+  structure-test:
     runs-on: ubuntu-latest
     steps:
 
