@@ -1,7 +1,12 @@
 name: Build and Run Structure Test
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      generateBasicTest:
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build_and_dispatch:
@@ -30,10 +35,18 @@ jobs:
       run: |
         docker build . --file Dockerfile --tag $(echo $IMAGE_NAME_WITH_SHA) --tag $(echo $IMAGE_NAME:latest) --load
     
-    - name: Download container structure test binary
+    - name: Setup Container Structure Test
       shell: bash
       run: |
-        curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 && chmod +x container-structure-test-linux-amd64 && sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+        echo "Setup container structure test binary"
+        curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
+        chmod +x container-structure-test-linux-amd64
+        sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+
+    - name: Generate Basic structure test
+      if: inputs.generateBasicTest == true
+      run: |
+        echo "Generate basic container structure test"
         mkdir -p tests/structure
         cat <<EOF > tests/structure/basic.yaml
         schemaVersion: 2.0.0

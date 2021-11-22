@@ -3,6 +3,10 @@ name: Build and Dispatch Event to GitOps Repository
 on:
   workflow_call:
     inputs:
+      generateBasicTest:
+        required: false
+        type: boolean
+        default: true
       cluster:
         required: true
         type: string
@@ -47,10 +51,18 @@ jobs:
         docker build . --file Dockerfile --tag $(echo $IMAGE_NAME_WITH_SHA) --tag $(echo $IMAGE_NAME:latest) --load
         docker push $IMAGE_NAME_WITH_SHA
     
-    - name: Download container structure test binary
+    - name: Setup Container Structure Test
       shell: bash
       run: |
-        curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 && chmod +x container-structure-test-linux-amd64 && sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+        echo "Setup container structure test binary"
+        curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
+        chmod +x container-structure-test-linux-amd64
+        sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+
+    - name: Generate Basic structure test
+      if: inputs.generateBasicTest == true
+      run: |
+        echo "Generate basic container structure test"
         mkdir -p tests/structure
         cat <<EOF > tests/structure/basic.yaml
         schemaVersion: 2.0.0
