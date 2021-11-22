@@ -25,13 +25,12 @@ jobs:
         echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
         echo "IMAGE_NAME_WITH_SHA=$IMG:${GITHUB_SHA::8}" >> $GITHUB_ENV
 
-    - name: Cache node modules
+    - name: Cache buildkit build
       uses: actions/cache@v2
       with:
         path: /tmp/cache
         key: ${{ env.IMAGE_NAME_WITH_SHA }}
         restore-keys: |
-          ${{ env.IMAGE_NAME_WITH_SHA }}
           ${{ env.IMAGE_NAME  }}
 
     - name: Setup Docker Buildkit
