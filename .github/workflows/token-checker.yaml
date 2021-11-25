@@ -1,0 +1,20 @@
+name: Token Checker
+
+on:
+  pull_request:
+
+jobs:
+
+  check-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify ACCESS_TOKEN user
+        run: |
+          gh auth status
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      - name: Verify CROSS_REPO_TOKEN user
+        run: |
+          gh auth status
+        env:
+          GITHUB_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
