@@ -16,6 +16,6 @@ jobs:
     steps:
       - name: Verify ${{ matrix.token }} user
         run: |
-          gh auth login --with-token < $GITHUB_TOKEN
+          gh auth login --with-token < $(echo $GITHUB_TOKEN)
         env:
           GITHUB_TOKEN: ${{ secrets[matrix.token] }}
