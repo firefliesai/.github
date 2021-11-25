@@ -5,7 +5,7 @@ on:
 
 jobs:
 
-  check-token:
+  check-access-token:
     runs-on: ubuntu-latest
     steps:
       - name: Verify ACCESS_TOKEN user
@@ -13,6 +13,9 @@ jobs:
           gh auth status
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+  check-cross-repo-token:
+    runs-on: ubuntu-latest
+    steps:
       - name: Verify CROSS_REPO_TOKEN user
         run: |
           gh auth status
