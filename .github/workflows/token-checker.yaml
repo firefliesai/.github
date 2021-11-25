@@ -16,6 +16,6 @@ jobs:
     steps:
       - name: Verify ${{ matrix.token }} user
         run: |
-          gh auth login --with-token $GITHUB_TOKEN
+          gh pr comment ${{ github.event.number }} -b "Hello from token ${{ matrix.token }} :wink:"
         env:
           GITHUB_TOKEN: ${{ secrets[matrix.token] }}
