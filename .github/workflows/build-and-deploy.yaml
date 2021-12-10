@@ -7,6 +7,10 @@ on:
         required: false
         type: boolean
         default: true
+      deploy:
+        required: false
+        type: boolean
+        default: true
       cluster:
         required: true
         type: string
@@ -100,6 +104,7 @@ jobs:
 
     - name: Dispatch Event to k8s-${{ inputs.cluster }}
       uses: peter-evans/repository-dispatch@v1
+      if: inputs.deploy == true
       with:
         token: ${{ secrets.dispatchToken }}
         repository: firefliesai/k8s-${{ inputs.cluster }}
