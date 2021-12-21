@@ -72,9 +72,9 @@ jobs:
         --tag $(echo $IMAGE_NAME:latest) \
         --label '${{ steps.metadata.outputs.labels }}' \
         --cache-from type=local,src=/tmp/cache \
-        --cache-to type=local,dest=/tmp/cache \
+        --cache-to type=local,dest=/tmp/cache-new \
         --load
-    
+
     - name: Setup Container Structure Test
       shell: bash
       run: |
@@ -117,3 +117,8 @@ jobs:
         repository: firefliesai/k8s-${{ inputs.cluster }}
         event-type: deployService
         client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME_WITH_SHA }}", "branch": "${{ env.BRANCH_NAME }}" }'
+
+    - name: Move cache # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#local-cache
+      run: |
+        rm -rf /tmp/cache
+        mv /tmp/cache-new /tmp/cache
