@@ -19,6 +19,9 @@ on:
         required: true
       dispatchToken:
         required: true
+      buildArgs:
+        required: false
+        description: Build env var
 
 jobs:
   build_and_dispatch:
@@ -65,15 +68,18 @@ jobs:
         images: ${{ env.IMAGE_NAME }}
 
     - name: Build
-      run: |
-        docker build . \
-        --file Dockerfile \
-        --tag $(echo $IMAGE_NAME_WITH_SHA) \
-        --tag $(echo $IMAGE_NAME:latest) \
-        --label '${{ steps.metadata.outputs.labels }}' \
-        --cache-from type=local,src=/tmp/cache \
-        --cache-to type=local,dest=/tmp/cache-new \
-        --load
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        load: true
+        labels: ${{ steps.metadata.outputs.labels }}
+        cache-from: type=local,src=/tmp/cache
+        cache-to: type=local,dest=/tmp/cache-new
+        build-args: ${{ secrets.buildArgs }}
+        tags: |
+          ${{ env.IMAGE_NAME_WITH_SHA }}
+          ${{ env.IMAGE_NAME}}:latest
+
 
     - name: Setup Container Structure Test
       shell: bash
