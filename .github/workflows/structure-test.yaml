@@ -40,8 +40,8 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v2
       with:
-        token: ${{ steps.checkout-config.outputs.token }}
-        submodules: ${{ steps.checkout-config.outputs.submodules }}
+        token: ${{ steps.checkout-config.outputs.result.token }}
+        submodules: ${{ steps.checkout-config.outputs.result.submodules }}
 
     - name: Extrapolate Environment Variables
       shell: bash
