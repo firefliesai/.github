@@ -7,6 +7,10 @@ on:
         required: false
         type: boolean
         default: true
+    secrets:
+      buildArgs:
+        required: false
+        description: Build env var
 
 jobs:
   structure-test:
@@ -39,15 +43,17 @@ jobs:
       with:
         install: true
 
-    - name: Build the Docker image
-      run: |
-        docker build . \
-        --file Dockerfile \
-        --tag $(echo $IMAGE_NAME_WITH_SHA) \
-        --tag $(echo $IMAGE_NAME:latest) \
-        --cache-from type=local,src=/tmp/cache \
-        --load
-    
+    - name: Build
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        load: true
+        cache-from: type=local,src=/tmp/cache
+        build-args: ${{ secrets.buildArgs }}
+        tags: |
+          ${{ env.IMAGE_NAME_WITH_SHA }}
+          ${{ env.IMAGE_NAME}}:latest
+
     - name: Setup Container Structure Test
       shell: bash
       run: |
