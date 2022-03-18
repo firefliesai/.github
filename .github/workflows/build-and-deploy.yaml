@@ -22,14 +22,37 @@ on:
       buildArgs:
         required: false
         description: Build env var
+      submodulesToken:
+        required: false
+        description: Token for fetching submodules when checkout
 
 jobs:
   build_and_dispatch:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Evaluating checkout condition
+      id: checkout-config
+      uses: actions/github-script@v6
+      with:
+        script: |
+          if ('${{ secrets.submodulesToken }}' == '') {
+            return {
+              token: '${{ github.token }}',
+              submodules: false,
+            }
+          }
+
+          return {
+            token: '${{ secrets.submodulesToken }}',
+            submodules: 'recursive'
+          }
+
     - name: Checkout source
       uses: actions/checkout@v2
+      with:
+        token: ${{ fromJson(steps.checkout-config.outputs.result).token }}
+        submodules: ${{ fromJson(steps.checkout-config.outputs.result).submodules }}
     
     - name: Extrapolate Environment Variables
       shell: bash
