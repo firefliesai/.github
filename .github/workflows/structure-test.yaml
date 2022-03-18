@@ -27,8 +27,8 @@ jobs:
         script: |
           if ('${{ secrets.submodulesToken }}' == '') {
             return {
-              token: '',
-              submodules: '',
+              token: '${{ github.token }}',
+              submodules: false,
             }
           }
 
