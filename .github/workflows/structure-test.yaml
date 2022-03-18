@@ -11,13 +11,24 @@ on:
       buildArgs:
         required: false
         description: Build env var
+      submodulesToken:
+        required: false
+        description: Token for fetching submodules when checkout
 
 jobs:
   structure-test:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Checkout source with Submodules
+      if: ${{ secrets.submodulesToken }}
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.submodulesToken }}
+        submodules: recursive
+
     - name: Checkout source
+      if: ${{ !secrets.submodulesToken }}
       uses: actions/checkout@v2
 
     - name: Extrapolate Environment Variables
