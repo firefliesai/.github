@@ -20,16 +20,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Checkout source with Submodules
-      if: ${{ secrets.submodulesToken }}
-      uses: actions/checkout@v2
+    - name: Evaluating checkout condition
+      id: checkout-config
+      uses: actions/github-script@v6
       with:
-        token: ${{ secrets.submodulesToken }}
-        submodules: recursive
+        script: |
+          if ('${{ secrets.submodulesToken }}' == '') {
+            return {
+              token: '',
+              submodules: '',
+            }
+          }
+
+          return {
+            token: '${{ secrets.submodulesToken }}',
+            submodules: 'recursive'
+          }
 
     - name: Checkout source
-      if: ${{ !secrets.submodulesToken }}
       uses: actions/checkout@v2
+      with:
+        token: ${{ steps.checkout-config.outputs.token }}
+        submodules: ${{ steps.checkout-config.outputs.submodules }}
 
     - name: Extrapolate Environment Variables
       shell: bash
