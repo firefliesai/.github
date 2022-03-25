@@ -28,6 +28,8 @@ on:
 
 jobs:
   build_and_dispatch:
+    outputs:
+      IMAGE_TAG: ${{ steps.image-tag.outputs.IMAGE_NAME_WITH_SHA }}
     runs-on: ubuntu-latest
     steps:
 
@@ -55,6 +57,7 @@ jobs:
         submodules: ${{ fromJson(steps.checkout-config.outputs.result).submodules }}
     
     - name: Extrapolate Environment Variables
+      id: image-tag
       shell: bash
       run: |
         echo "Calculating BRANCH_NAME and IMAGE_NAME"
@@ -62,6 +65,7 @@ jobs:
         echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
         echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
         echo "IMAGE_NAME_WITH_SHA=$IMG:${GITHUB_SHA::8}" >> $GITHUB_ENV
+        echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${GITHUB_SHA::8}"
 
     - name: Cache buildkit build
       uses: actions/cache@v2
