@@ -14,6 +14,10 @@ on:
       cluster:
         required: true
         type: string
+    outputs:
+      IMAGE_TAG:
+        description: Containerized image tag produced
+        value: ${{ jobs.build_and_dispatch.outputs.IMAGE_TAG }}
     secrets:
       pushToken:
         required: true
