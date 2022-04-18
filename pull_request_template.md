@@ -17,7 +17,7 @@ Which introduces
 
 xxx
 
-## Any background context you want to provide?
+## Any background context you want to provide beyond Shortcut?
 
 xxx
 
@@ -29,6 +29,6 @@ xxx
 
 xxx
 
-## Any Security Implication of this request:
+## Any Security implications
 
 xxx
