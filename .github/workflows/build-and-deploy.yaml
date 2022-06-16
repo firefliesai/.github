@@ -147,12 +147,26 @@ jobs:
       run: |
         docker push $IMAGE_NAME_WITH_SHA
 
-    - name: Dispatch Event to k8s-${{ inputs.cluster }}
+    - name: Determine Cluster name
+      uses: actions/github-script@v6
+      id: cluster-name
+      env:
+        ORIGINAL_CLUSTER_NAME: ${{ inputs.cluster }}
+        BRANCH_NAHE: ${{ env.BRANCH_NAME }}
+      with:
+        script: |
+          if (process.env.BRANCH_NAME === 'staging') {
+            return 'staging';
+          }
+          // The origin most likely from master
+          return process.env.ORIGINAL_CLUSTER_NAME;
+
+    - name: Dispatch Event to k8s-${{ steps.cluster-name.outputs.result }}
       uses: peter-evans/repository-dispatch@v1
       if: inputs.dispatchDeploy == true
       with:
         token: ${{ secrets.dispatchToken }}
-        repository: firefliesai/k8s-${{ inputs.cluster }}
+        repository: firefliesai/k8s-${{ steps.cluster-name.outputs.result }}
         event-type: deployService
         client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME_WITH_SHA }}", "branch": "${{ env.BRANCH_NAME }}" }'
 
