@@ -154,6 +154,7 @@ jobs:
         ORIGINAL_CLUSTER_NAME: ${{ inputs.cluster }}
         BRANCH_NAHE: ${{ env.BRANCH_NAME }}
       with:
+        result-encoding: string
         script: |
           if (process.env.BRANCH_NAME === 'staging') {
             return 'staging';
