@@ -5,7 +5,7 @@ on:
     inputs:
       tagPrefix:
         required: false
-        type: boolean
+        type: string
         default: ""
       generateBasicTest:
         required: false
