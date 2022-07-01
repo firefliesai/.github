@@ -22,6 +22,9 @@ on:
       IMAGE_TAG:
         description: Containerized image tag produced
         value: ${{ jobs.build_and_dispatch.outputs.IMAGE_TAG }}
+      IMAGE_NAME_FULL_SHA:
+        description: Containerized image tag produced
+        value: ${{ jobs.build_and_dispatch.outputs.IMAGE_NAME_FULL_SHA }}
     secrets:
       pushToken:
         required: true
@@ -75,6 +78,7 @@ jobs:
         echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA::8}" >> $GITHUB_ENV
         echo '::echo::on'
         echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA::8}"
+        echo "::set-output name=IMAGE_NAME_FULL_SHA::$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA}"
 
     - name: Cache buildkit build
       uses: actions/cache@v2
