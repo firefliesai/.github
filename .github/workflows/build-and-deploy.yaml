@@ -72,7 +72,7 @@ jobs:
         IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
         echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
         echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
-        echo "IMAGE_NAME_WITH_SHA=$IMG:${ inputs.tagPrefix }${GITHUB_SHA::8}" >> $GITHUB_ENV
+        echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA::8}" >> $GITHUB_ENV
         echo '::echo::on'
         echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${GITHUB_SHA::8}"
 
