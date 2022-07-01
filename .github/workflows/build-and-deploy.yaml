@@ -74,7 +74,7 @@ jobs:
         echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
         echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA::8}" >> $GITHUB_ENV
         echo '::echo::on'
-        echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${GITHUB_SHA::8}"
+        echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA::8}"
 
     - name: Cache buildkit build
       uses: actions/cache@v2
