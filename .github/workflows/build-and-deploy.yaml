@@ -76,6 +76,7 @@ jobs:
         echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
         echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
         echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA::8}" >> $GITHUB_ENV
+        echo "IMAGE_NAME_FULL_SHA=$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA}" >> $GITHUB_ENV
         echo '::echo::on'
         echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA::8}"
         echo "::set-output name=IMAGE_NAME_FULL_SHA::$IMG:${{ inputs.tagPrefix }}${GITHUB_SHA}"
@@ -118,6 +119,7 @@ jobs:
         build-args: ${{ secrets.buildArgs }}
         tags: |
           ${{ env.IMAGE_NAME_WITH_SHA }}
+          ${{ env.IMAGE_NAME_FULL_SHA }}
           ${{ env.IMAGE_NAME}}:latest
 
 
@@ -154,6 +156,7 @@ jobs:
     - name: Push container image
       run: |
         docker push $IMAGE_NAME_WITH_SHA
+        docker push $IMAGE_NAME_FULL_SHA
 
     - name: Determine Cluster name
       uses: actions/github-script@v6
