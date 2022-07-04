@@ -3,6 +3,10 @@ name: Build and Dispatch Event to GitOps Repository
 on:
   workflow_call:
     inputs:
+      tagPrefix:
+        required: false
+        type: string
+        default: ""
       generateBasicTest:
         required: false
         type: boolean
@@ -18,6 +22,9 @@ on:
       IMAGE_TAG:
         description: Containerized image tag produced
         value: ${{ jobs.build_and_dispatch.outputs.IMAGE_TAG }}
+      IMAGE_NAME_FULL_SHA:
+        description: Containerized image tag produced
+        value: ${{ jobs.build_and_dispatch.outputs.IMAGE_NAME_FULL_SHA }}
     secrets:
       pushToken:
         required: true
@@ -63,14 +70,23 @@ jobs:
     - name: Extrapolate Environment Variables
       id: image-tag
       shell: bash
+      env:
+        PR_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
         echo "Calculating BRANCH_NAME and IMAGE_NAME"
         IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
+        TAG_SHA=${GITHUB_SHA}
+        # if PR_SHA not null, use it instead.
+        if [ $PR_SHA != '' ]; then
+          TAG_SHA=$PR_SHA
+        fi
         echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
         echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
-        echo "IMAGE_NAME_WITH_SHA=$IMG:${GITHUB_SHA::8}" >> $GITHUB_ENV
+        echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA::8}" >> $GITHUB_ENV
+        echo "IMAGE_NAME_FULL_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA}" >> $GITHUB_ENV
         echo '::echo::on'
-        echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${GITHUB_SHA::8}"
+        echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${{ inputs.tagPrefix }}${TAG_SHA::8}"
+        echo "::set-output name=IMAGE_NAME_FULL_SHA::$IMG:${{ inputs.tagPrefix }}${TAG_SHA}"
 
     - name: Cache buildkit build
       uses: actions/cache@v2
@@ -110,6 +126,7 @@ jobs:
         build-args: ${{ secrets.buildArgs }}
         tags: |
           ${{ env.IMAGE_NAME_WITH_SHA }}
+          ${{ env.IMAGE_NAME_FULL_SHA }}
           ${{ env.IMAGE_NAME}}:latest
 
 
@@ -146,6 +163,7 @@ jobs:
     - name: Push container image
       run: |
         docker push $IMAGE_NAME_WITH_SHA
+        docker push $IMAGE_NAME_FULL_SHA
 
     - name: Determine Cluster name
       uses: actions/github-script@v6
