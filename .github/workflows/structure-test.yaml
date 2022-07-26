@@ -7,6 +7,10 @@ on:
         required: false
         type: boolean
         default: true
+      context:
+        required: false
+        type: string
+        default: "."
     secrets:
       buildArgs:
         required: false
@@ -69,7 +73,7 @@ jobs:
     - name: Build
       uses: docker/build-push-action@v2
       with:
-        context: .
+        context: ${{ inputs.context }}
         load: true
         cache-from: type=local,src=/tmp/cache
         build-args: ${{ secrets.buildArgs }}
@@ -105,4 +109,4 @@ jobs:
       shell: bash
       run: |
         echo "Run test against ${IMAGE_NAME_WITH_SHA}"
-        find ./tests/structure -name "*.yaml" -print0 | xargs -0 -I {} container-structure-test test --image ${IMAGE_NAME_WITH_SHA} --config {}
+        find ${{ inputs.context }}/tests/structure -name "*.yaml" -print0 | xargs -0 -I {} container-structure-test test --image ${IMAGE_NAME_WITH_SHA} --config {}
