@@ -24,7 +24,15 @@ jobs:
               "channel": "feature-rollout",
               "username_mapping": {
                 "hoangvvo": "U03B3E4UPV3",
-                "dmkorb": "U0256NC37GT"
+                "dmkorb": "U0256NC37GT",
+                "samuelayo": "UFHCU47B6",
+                "sudotong": "U04KDQACM",
+                "greguintow": "U02DDCN2UDC",
+                "debloper": "USG05RE76",
+                "jhho89": "U01HB1J09PF",
+                "rogerpadilla": "U02FR157SG1",
+                "grimmer0125": "U03BZH4CYBD",
+                "dirathea": "U028RKKSNTW"
               }
             }
         env:
