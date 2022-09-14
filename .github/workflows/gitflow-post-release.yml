@@ -1,0 +1,32 @@
+on:
+  workflow_call:
+    inputs:
+      develop_branch:
+        required: true
+        type: string
+        description: "Staging branch"
+
+      main_branch:
+        required: true
+        type: string
+        description: "Production branch"
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hoangvvo/gitflow-workflow-action@0.2.4
+        with:
+          develop_branch: ${{ inputs.develop_branch }}
+          main_branch: ${{ inputs.main_branch }}
+          slack: >
+            {
+              "channel": "feature-rollout",
+              "username_mapping": {
+                "hoangvvo": "U03B3E4UPV3",
+                "dmkorb": "U0256NC37GT"
+              }
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
