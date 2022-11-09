@@ -178,7 +178,7 @@ jobs:
       with:
         result-encoding: string
         script: |
-          if (process.env.BRANCH_NAME === 'staging') {
+          if (process.env.BRANCH_NAME !== 'master' && process.env.BRANCH_NAME !== 'main') {
             return 'staging';
           }
           // The origin most likely from master
