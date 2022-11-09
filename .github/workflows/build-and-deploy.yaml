@@ -22,6 +22,12 @@ on:
         required: false
         type: string
         default: "."
+      headRef:
+        required: false
+        type: string
+      headSha:
+        required: false
+        type: string
     outputs:
       IMAGE_TAG:
         description: Containerized image tag produced
@@ -70,12 +76,14 @@ jobs:
       with:
         token: ${{ fromJson(steps.checkout-config.outputs.result).token }}
         submodules: ${{ fromJson(steps.checkout-config.outputs.result).submodules }}
+        ref: ${{ inputs.headRef || github.sha }}
     
     - name: Extrapolate Environment Variables
       id: image-tag
       shell: bash
       env:
-        PR_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_REF: ${{ inputs.headRef || github.ref }}
+        PR_SHA: ${{ inputs.headSha || github.event.pull_request.head.sha }}
       run: |
         echo "Calculating BRANCH_NAME and IMAGE_NAME"
         IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
@@ -84,7 +92,7 @@ jobs:
         if [ $PR_SHA != '' ]; then
           TAG_SHA=$PR_SHA
         fi
-        echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+        echo "BRANCH_NAME=${{ env.PR_REF }}" >> $GITHUB_ENV
         echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
         echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA::8}" >> $GITHUB_ENV
         echo "IMAGE_NAME_FULL_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA}" >> $GITHUB_ENV
