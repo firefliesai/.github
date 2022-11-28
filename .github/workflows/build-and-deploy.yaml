@@ -193,6 +193,15 @@ jobs:
         event-type: deployService
         client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME_WITH_SHA }}", "branch": "${{ env.BRANCH_NAME }}" }'
 
+    - name: Dispatch Event to k8s-production
+      uses: peter-evans/repository-dispatch@v1
+      if: inputs.dispatchDeploy == true && (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main')
+      with:
+        token: ${{ secrets.dispatchToken }}
+        repository: firefliesai/k8s-production
+        event-type: deployService
+        client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME_WITH_SHA }}", "branch": "master" }'
+
     - name: Move cache # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#local-cache
       run: |
         rm -rf /tmp/cache
