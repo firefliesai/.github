@@ -81,7 +81,7 @@ jobs:
         IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
         TAG_SHA=${GITHUB_SHA}
         # if PR_SHA not null, use it instead.
-        if [ $PR_SHA != '' ]; then
+        if [[ $PR_SHA != '' ]]; then
           TAG_SHA=$PR_SHA
         fi
         echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
