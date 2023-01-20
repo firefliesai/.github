@@ -23,6 +23,14 @@ on:
         required: false
         type: string
         default: "."
+      imageName:
+        required: false
+        type: string
+        default: ""
+      directPush:
+        required: false
+        type: boolean
+        default: false
     outputs:
       IMAGE_TAG:
         description: Containerized image tag produced
@@ -77,9 +85,14 @@ jobs:
       shell: bash
       env:
         PR_SHA: ${{ github.event.pull_request.head.sha }}
+        CUSTOM_IMAGE_NAME: ${{ inputs.imageName }}
       run: |
         echo "Calculating BRANCH_NAME and IMAGE_NAME"
         IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
+        if [[ $CUSTOM_IMAGE_NAME != '' ]]; then
+          # If custom image name supplied, use it instead
+          IMG=$(echo ghcr.io/${{ github.repository }}/$CUSTOM_IMAGE_NAME)
+        fi
         TAG_SHA=${GITHUB_SHA}
         # if PR_SHA not null, use it instead.
         if [[ $PR_SHA != '' ]]; then
@@ -124,7 +137,8 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: ${{ inputs.context }}
-        load: true
+        load: ${{ inputs.directPush != 'true' }}
+        push: ${{ inputs.directPush == 'true' }}
         labels: ${{ steps.metadata.outputs.labels }}
         cache-from: type=local,src=/tmp/cache
         cache-to: type=local,mode=max,dest=/tmp/cache-new
@@ -136,6 +150,7 @@ jobs:
 
 
     - name: Setup Container Structure Test
+      if: inputs.directPush != true
       shell: bash
       run: |
         echo "Setup container structure test binary"
@@ -160,12 +175,14 @@ jobs:
         EOF
 
     - name: Runs structure test
+      if: inputs.directPush != true
       shell: bash
       run: |
         echo "Run test against ${IMAGE_NAME_WITH_SHA}"
         find ${{ inputs.context }}/tests/structure -name "*.yaml" -print0 | xargs -0 -I {} container-structure-test test --image ${IMAGE_NAME_WITH_SHA} --config {}
 
     - name: Push container image
+      if: inputs.directPush != true
       run: |
         docker push $IMAGE_NAME_WITH_SHA
         docker push $IMAGE_NAME_FULL_SHA
