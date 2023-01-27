@@ -129,7 +129,7 @@ jobs:
     
     - name: Compute Metadata Labels
       id: metadata
-      uses: docker/metadata-action@v3
+      uses: docker/metadata-action@v4.3.0
       with:
         images: ${{ env.IMAGE_NAME }}
 
