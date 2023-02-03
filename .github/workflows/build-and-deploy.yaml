@@ -34,7 +34,7 @@ on:
       dockerFilePath:
         required: false
         type: string
-        default: "./Dockerfile"
+        default: "Dockerfile"
     outputs:
       IMAGE_TAG:
         description: Containerized image tag produced
