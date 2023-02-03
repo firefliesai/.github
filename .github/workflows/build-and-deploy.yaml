@@ -31,6 +31,10 @@ on:
         required: false
         type: boolean
         default: false
+      dockerFilePath:
+        required: false
+        type: string
+        default: "./Dockerfile"
     outputs:
       IMAGE_TAG:
         description: Containerized image tag produced
@@ -143,6 +147,7 @@ jobs:
         cache-from: type=local,src=/tmp/cache
         cache-to: type=local,mode=max,dest=/tmp/cache-new
         build-args: ${{ secrets.buildArgs }}
+        file: ${{ inputs.dockerFilePath }}
         tags: |
           ${{ env.IMAGE_NAME_WITH_SHA }}
           ${{ env.IMAGE_NAME_FULL_SHA }}
