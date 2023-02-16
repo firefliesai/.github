@@ -21,7 +21,7 @@ on:
 
 jobs:
   structure-test:
-    runs-on: k8s-runner
+    runs-on: k8s-builder
     steps:
 
     - name: Evaluating checkout condition
