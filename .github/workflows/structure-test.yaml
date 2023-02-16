@@ -21,7 +21,7 @@ on:
 
 jobs:
   structure-test:
-    runs-on: ubuntu-latest
+    runs-on: k8s-runner
     steps:
 
     - name: Evaluating checkout condition
