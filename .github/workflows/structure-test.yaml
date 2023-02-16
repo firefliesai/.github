@@ -61,6 +61,7 @@ jobs:
       id: buildx
       with:
         install: true
+        endpoint: default
 
     - name: Cache buildkit build
       uses: actions/cache@v3
