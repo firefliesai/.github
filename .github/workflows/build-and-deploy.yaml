@@ -138,6 +138,7 @@ jobs:
         images: ${{ env.IMAGE_NAME }}
 
     - name: Build
+      id: docker_build
       uses: docker/build-push-action@v3.3.0
       with:
         context: ${{ inputs.context }}
@@ -153,6 +154,11 @@ jobs:
           ${{ env.IMAGE_NAME_FULL_SHA }}
           ${{ env.IMAGE_NAME}}:latest
 
+    - name: Output image info including size
+      run: |
+          image_size_bytes=$(docker image inspect ${{ steps.docker_build.outputs.imageid }} | jq -r '.[0].Size')
+          echo "### Build info" >> $GITHUB_STEP_SUMMARY
+          echo "Image size: $(numfmt --to=iec --suffix=B --format="%.2f" $image_size_bytes)" >> $GITHUB_STEP_SUMMARY
 
     - name: Setup Container Structure Test
       if: inputs.directPush != true
