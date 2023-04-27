@@ -159,6 +159,7 @@ jobs:
           ${{ env.IMAGE_NAME}}:latest
 
     - name: Output image info including size
+      if: inputs.directPush != true
       run: |
           docker image ls
           image_size_bytes=$(docker image inspect ${{ env.IMAGE_NAME_WITH_SHA }} | jq -r '.[0].Size')
