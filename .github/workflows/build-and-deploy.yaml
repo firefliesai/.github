@@ -122,7 +122,7 @@ jobs:
         password: ${{ secrets.pushToken }}
 
     - name: Setup Docker context
-      if: inputs.runner != "ubuntu-latest"
+      if: ${{ inputs.runner != 'ubuntu-latest' }}
       run: |
         docker context create builders
 
