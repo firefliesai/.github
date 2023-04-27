@@ -131,7 +131,7 @@ jobs:
       id: buildx
       with:
         install: true
-        endpoint: ${{ inputs.runner == "ubuntu-latest" && 'unix:///var/run/docker.sock' || 'builders' }}
+        endpoint: ${{ inputs.runner == 'ubuntu-latest' && 'unix:///var/run/docker.sock' || 'builders' }}
 
     - name: Cache buildkit build
       uses: actions/cache@v3
