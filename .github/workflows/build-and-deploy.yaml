@@ -35,6 +35,10 @@ on:
         required: false
         type: string
         default: "Dockerfile"
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
     outputs:
       IMAGE_TAG:
         description: Containerized image tag produced
@@ -58,7 +62,7 @@ jobs:
   build_and_dispatch:
     outputs:
       IMAGE_TAG: ${{ steps.image-tag.outputs.IMAGE_NAME_WITH_SHA }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
 
     - name: Evaluating checkout condition
@@ -117,11 +121,17 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.pushToken }}
 
+    - name: Setup Docker context
+      if: ${{ inputs.runner != 'ubuntu-latest' }}
+      run: |
+        docker context create builders
+
     - name: Setup Docker Buildkit
       uses: docker/setup-buildx-action@v2.2.1
       id: buildx
       with:
         install: true
+        endpoint: ${{ inputs.runner == 'ubuntu-latest' && 'unix:///var/run/docker.sock' || 'builders' }}
 
     - name: Cache buildkit build
       uses: actions/cache@v3
