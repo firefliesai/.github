@@ -111,8 +111,10 @@ jobs:
         echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA::8}" >> $GITHUB_ENV
         echo "IMAGE_NAME_FULL_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA}" >> $GITHUB_ENV
         echo '::echo::on'
-        echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${{ inputs.tagPrefix }}${TAG_SHA::8}"
-        echo "::set-output name=IMAGE_NAME_FULL_SHA::$IMG:${{ inputs.tagPrefix }}${TAG_SHA}"
+        # echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${{ inputs.tagPrefix }}${TAG_SHA::8}"
+        echo "IMAGE_NAME_WITH_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA::8}" >> $GITHUB_OUTPUT
+        # echo "::set-output name=IMAGE_NAME_FULL_SHA::$IMG:${{ inputs.tagPrefix }}${TAG_SHA}"
+        echo "IMAGE_NAME_FULL_SHA=$IMG:${{ inputs.tagPrefix }}${TAG_SHA}" >> $GITHUB_OUTPUT
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2.1.0
