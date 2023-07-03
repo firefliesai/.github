@@ -58,17 +58,6 @@ on:
         required: false
         description: Token for fetching submodules when checkout
 
-permissions:
-  packages: write
-  actions: read
-  checks: read
-  contents: read
-  deployments: read
-  issues: read
-  pull-requests: read
-  repository-projects: read
-  security-events: read
-  statuses: read
 
 jobs:
   build_and_dispatch:
@@ -211,6 +200,17 @@ jobs:
         find ${{ inputs.context }}/tests/structure -name "*.yaml" -print0 | xargs -0 -I {} container-structure-test test --image ${IMAGE_NAME_WITH_SHA} --config {}
 
     - name: Push container image
+      permissions:
+        packages: write
+        actions: read
+        checks: read
+        contents: read
+        deployments: read
+        issues: read
+        pull-requests: read
+        repository-projects: read
+        security-events: read
+        statuses: read
       if: inputs.directPush != true
       run: |
         docker push $IMAGE_NAME_WITH_SHA
