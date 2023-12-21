@@ -1,0 +1,33 @@
+name: Automate deployment
+
+on:
+  workflow_call:
+    inputs:
+      staging_branch:
+        default: 'staging'
+        required: false
+        type: string
+      main_branch:
+        default: 'main'
+        required: false
+        type: string
+
+jobs:
+  create_release:
+    name: Create deployment release
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create deployment PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const script = require('${{ github.workspace }}/.github/scripts/auto_release.js');
+
+            const isNotMergeCommit = await script.checkMergeCommit({ github, context });
+            if (isNotMergeCommit) return;
+
+            await script.createDeploymentPR({ github, context });
+            await script.generateSummaries({ github, context, core });

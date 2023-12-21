@@ -1,0 +1,35 @@
+name: Automate slack feature rollout
+
+on:
+  workflow_call:
+    secrets:
+      SLACK_TOKEN:
+        required: true
+      CROSS_REPO_TOKEN:
+        required: true
+
+jobs:
+  create_release:
+    name: Create Release
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install packages
+        env:
+          GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+        run: |
+          mv package.json package.json.xx
+          npm install  slackify-markdown @slack/web-api
+      - name: Create release and announce on slack
+        uses: actions/github-script@v6
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        with:
+          script: |
+            const format = require('slackify-markdown');
+            const { WebClient } = require('@slack/web-api');
+            const script = require('${{ github.workspace }}/.github/scripts/auto_announce.js');
+
+            const release = await script.createRelease({ github, context });
+            await script.notifySlack({ WebClient, release, format, context });
