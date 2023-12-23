@@ -1,3 +1,5 @@
+# DEPRECATED - USE gitflow-release instead
+
 on:
   workflow_call:
     inputs:
