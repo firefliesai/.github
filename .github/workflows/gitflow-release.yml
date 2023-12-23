@@ -19,7 +19,7 @@ on:
       merge_back_from_main:
         required: false
         type: string
-        description: "Merge back from main to develop"
+        description: "Merge back from production branch instead of release branch to staging branch"
 
 jobs:
   release:
