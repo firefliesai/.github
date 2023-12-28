@@ -26,10 +26,10 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/auto_release.js
-      - run: |
-          ls -al
-          ls -al firefliesai
-          ls -al firefliesai/scripts
+      - name: List the workflow JS files
+        run: |
+          ls -al firefliesai/.github/scripts
+        continue-on-error: true
       - name: Create deployment PR
         uses: actions/github-script@v6
         with:
