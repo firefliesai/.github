@@ -37,6 +37,9 @@ jobs:
           script: |
             const script = require('${{ github.workspace }}/firefliesai/.github/scripts/auto_release.js');
 
+            console.info(JSON.stringify(context))
+            console.log(context)
+
             const isNotMergeCommit = await script.checkMergeCommit({ github, context });
             if (isNotMergeCommit) return;
 
