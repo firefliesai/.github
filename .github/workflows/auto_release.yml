@@ -43,5 +43,10 @@ jobs:
             const isNotMergeCommit = await script.checkMergeCommit({ github, context });
             if (isNotMergeCommit) return;
 
+            context.payload.inputs = {
+              main_branch: '${{ inputs.main_branch }}',
+              staging_branch: '${{ inputs.staging_branch }}'
+            }
+
             await script.createDeploymentPR({ github, context });
             await script.generateSummaries({ github, context, core });
