@@ -14,7 +14,14 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: firefliesai/.github
+          path: firefliesai
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/scripts/auto_announce.js
       - name: Install packages
         env:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
@@ -29,7 +36,7 @@ jobs:
           script: |
             const format = require('slackify-markdown');
             const { WebClient } = require('@slack/web-api');
-            const script = require('${{ github.workspace }}/.github/scripts/auto_announce.js');
+            const script = require('${{ github.workspace }}/firefliesai/.github/scripts/auto_announce.js');
 
             const release = await script.createRelease({ github, context });
             await script.notifySlack({ WebClient, release, format, context });
