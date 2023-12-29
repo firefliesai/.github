@@ -4,7 +4,7 @@ const getCommitPullRequest = async ({ github, context, message }) => {
 	console.log('number1', prNumber);
 
 	if (/\D+/.test(prNumber)) {
-		prNumber = prNumber.replace(/^.+ #(\d+) .+$/, '$1'); // Extract commit pr number
+		prNumber = prNumber.replace(/^(.|\n|\r)* #(\d+) (.|\n|\r)+$/, '$2'); // Extract commit pr number
 		console.log('number2', prNumber);
 	}
 
