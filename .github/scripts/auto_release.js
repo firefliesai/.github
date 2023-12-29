@@ -1,10 +1,14 @@
 const getCommitPullRequest = async ({ github, context, message }) => {
+	console.log('message', message);
 	const prNumber = message.replace(/^.*\(#(\d+)\)(.|\n|\r)*$/, '$1'); // Extract commit pr number
+	console.log('number', prNumber);
 
 	const { data: pullRequest } = await github.rest.pulls.get({
 		...context.repo,
 		pull_number: Number(prNumber),
 	});
+
+	console.log('request', pullRequest);
 
 	if (!pullRequest) return;
 	if (!pullRequest.title.includes('Deploy to production')) {
@@ -71,6 +75,8 @@ Computing summaries of merged PRs...
 			direction: 'desc'
 		});
 
+		console.log('prs', prs);
+
 		const hasDeployPR = prs?.some?.(pr => pr.title === 'Deploy to production');
 		if (!hasDeployPR) return;
 
@@ -83,9 +89,12 @@ Computing summaries of merged PRs...
 			pull_number: deployPR.number
 		});
 
+		console.log('commits', commits);
+
 		await Promise.allSettled(
 			commits.map(async ({ commit }) => {
 				const { message } = commit;
+				console.log('message', /\(#\d+\)/gm.test(message), message);
 
 				if (/(\(#\d+\)|Merge pull request #\d+)/gm.test(message)) {
 					const pullRequest = await getCommitPullRequest({ github, context, message });
