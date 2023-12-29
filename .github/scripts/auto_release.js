@@ -1,8 +1,12 @@
 const getCommitPullRequest = async ({ github, context, message }) => {
 	console.log('message', message);
-	const prNumber = message.replace(/^.*\(#(\d+)\)(.|\n|\r)*$/, '$1'); // Extract commit pr number
-	console.log('number', prNumber);
+	let prNumber = message.replace(/^.*\(#(\d+)\)(.|\n|\r)*$/, '$1'); // Extract commit pr number
 
+	if (/\D+/.test(prNumber)) {
+		prNumber = message.replace(/^.+ #(\d+) .+$/, '$1'); // Extract commit pr number
+	}
+
+	console.log('number', prNumber);
 	const { data: pullRequest } = await github.rest.pulls.get({
 		...context.repo,
 		pull_number: Number(prNumber),
