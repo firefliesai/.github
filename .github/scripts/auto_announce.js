@@ -53,7 +53,7 @@ module.exports = {
 			...context.repo,
 		});
 
-		const sha = context.payload.inputs?.sha ?? context.sha;
+		const sha = context.sha;
 		const { data: commit } = await github.rest.git.getCommit({
 			...context.repo,
 			commit_sha: sha

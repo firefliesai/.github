@@ -56,6 +56,8 @@ Computing summaries of merged PRs...
 				body
 			});
 		}
+
+		return !hasDeployPR;
 	},
 	generateSummaries: async ({ github, context, core }) => {
 		const allPullRequests = {};
