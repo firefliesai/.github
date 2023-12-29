@@ -97,7 +97,6 @@ jobs:
                 repo: context.repo.repo,
                 pull_number: prNumber
               });
-              const regex = /## What does this PR do\?\n\n(.*?)\n\n##/s;
               if (!pr.data.body) {
                 return;
               }
