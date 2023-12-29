@@ -64,8 +64,6 @@ Computing summaries of merged PRs...
 	},
 	generateSummaries: async ({ github, context, core }) => {
 		const allPullRequests = {};
-		console.log('payload', context.payload);
-		console.log('context', context);
 
 		const { data: prs } = await github.rest.pulls.list({
 			...context.repo,
@@ -89,9 +87,12 @@ Computing summaries of merged PRs...
 			pull_number: deployPR.number
 		});
 
+		console.log('commits', commits);
+
 		await Promise.allSettled(
 			commits.map(async ({ commit }) => {
 				const { message } = commit;
+				console.log('commit', /\(#\d+\)/gm.test(message), message);
 
 				if (/\(#\d+\)/gm.test(message)) {
 					const pullRequest = await getCommitPullRequest({ github, context, message });
@@ -102,7 +103,7 @@ Computing summaries of merged PRs...
 			})
 		);
 
-		console.info(allPullRequests);
+		console.info('all', allPullRequests);
 
 		let isBugFix = false;
 		let isFeature = false;
