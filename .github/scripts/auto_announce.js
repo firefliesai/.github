@@ -54,9 +54,15 @@ module.exports = {
 		}).then((data) => {
 			return data;
 		}).catch((err) => {
-			console.log(err);
-			console.log(JSON.stringify(err));
-			throw new Error('Stop Workflow');
+			if (err.status === 404) {
+				return {
+					data: {
+						tag_name: 'v0.0.0'
+					}
+				}
+			}
+
+			throw err;
 		});
 
 		const sha = context.sha;
