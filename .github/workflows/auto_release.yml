@@ -2,6 +2,10 @@ name: Automate deployment
 
 on:
   workflow_call:
+    outputs:
+      NEW_PR:
+        value: ${{ fromJSON(jobs.create_release.result).NEW_PR }}
+        description: Resolves to true if a new deployment PR was created from the workflow run
     inputs:
       staging_branch:
         default: 'staging'
@@ -26,19 +30,12 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/auto_release.js
-      - name: List the workflow JS files
-        run: |
-          ls -al firefliesai/.github/scripts
-        continue-on-error: true
       - name: Create deployment PR
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const script = require('${{ github.workspace }}/firefliesai/.github/scripts/auto_release.js');
-
-            console.info(JSON.stringify(context))
-            console.log(context)
 
             const isNotMergeCommit = await script.checkMergeCommit({ github, context });
             if (isNotMergeCommit) return;
@@ -48,5 +45,9 @@ jobs:
               staging_branch: '${{ inputs.staging_branch }}'
             }
 
-            await script.createDeploymentPR({ github, context });
+            const newDeployment = await script.createDeploymentPR({ github, context });
             await script.generateSummaries({ github, context, core });
+
+            return {
+              NEW_PR: newDeployment
+            }
