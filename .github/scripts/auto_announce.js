@@ -51,6 +51,12 @@ module.exports = {
 	createRelease: async ({ github, context }) => {
 		const { data: latest } = await github.rest.repos.getLatestRelease({
 			...context.repo,
+		}).then((data) => {
+			return data;
+		}).catch((err) => {
+			console.log(err);
+			console.log(JSON.stringify(err));
+			throw new Error('Stop Workflow');
 		});
 
 		const sha = context.sha;
