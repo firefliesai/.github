@@ -4,7 +4,7 @@ on:
   workflow_call:
     outputs:
       NEW_PR:
-        value: ${{ fromJSON(jobs.create_release.result).NEW_PR }}
+        value: ${{ jobs.create_release.outputs.NEW_PR }}
         description: Resolves to true if a new deployment PR was created from the workflow run
     inputs:
       staging_branch:
@@ -21,6 +21,8 @@ jobs:
     name: Create deployment release
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    outputs:
+      NEW_PR: ${{ fromJSON(steps.deploy.outputs.result).NEW_PR }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -31,6 +33,7 @@ jobs:
           sparse-checkout: |
             .github/scripts/auto_release.js
       - name: Create deployment PR
+        id: deploy
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
