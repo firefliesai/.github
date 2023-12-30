@@ -1,19 +1,14 @@
 const getCommitPullRequest = async ({ github, context, message }) => {
-	console.log('message', message);
 	let prNumber = message.replace(/^.*\(#(\d+)\)(.|\n|\r)*$/, '$1'); // Extract commit pr number
-	console.log('number1', prNumber);
 
 	if (/\D+/.test(prNumber)) {
 		prNumber = prNumber.replace(/^(.|\n|\r)* #(\d+) (.|\n|\r)+$/, '$2'); // Extract commit pr number
-		console.log('number2', prNumber);
 	}
 
 	const { data: pullRequest } = await github.rest.pulls.get({
 		...context.repo,
 		pull_number: Number(prNumber),
 	});
-
-	console.log('request', pullRequest);
 
 	if (!pullRequest) return;
 	if (!pullRequest.title.includes('Deploy to production')) {
@@ -92,12 +87,9 @@ Computing summaries of merged PRs...
 			pull_number: deployPR.number
 		});
 
-		console.log('commits', commits);
-
 		await Promise.allSettled(
 			commits.map(async ({ commit }) => {
 				const { message } = commit;
-				console.log('check', /(\(#\d+\)|Merge pull request #\d+)/gm.test(message), message);
 
 				if (/(\(#\d+\)|Merge pull request #\d+)/gm.test(message)) {
 					const pullRequest = await getCommitPullRequest({ github, context, message });
@@ -107,8 +99,6 @@ Computing summaries of merged PRs...
 				return;
 			})
 		);
-
-		console.info('all', allPullRequests);
 
 		let isBugFix = false;
 		let isFeature = false;
@@ -131,7 +121,6 @@ Computing summaries of merged PRs...
 
 		body = Object.keys(allPullRequests).reduce((draft, number) => {
 			const pullRequest = allPullRequests[number];
-			console.info(JSON.stringify(pullRequest.body));
 
 			let message = pullRequest.body.split('What does this PR do?')[1]?.split('#')[0]?.trim(); // Extract the PR summaries from the description body
 			if (!message) return draft;

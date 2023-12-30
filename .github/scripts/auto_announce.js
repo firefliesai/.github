@@ -44,7 +44,8 @@ const slackIDs = {
 	'xage93': 'U043X1K6810',
 	'kashyap-sojitra': 'U05RBAXUJUX',
 	'htkimura': 'U061P10ADNV',
-	'ghimire007': 'U065MEQ96AU'
+	'ghimire007': 'U065MEQ96AU',
+	'fisfat': 'UKLEEP4F6'
 }
 
 module.exports = {
@@ -112,7 +113,6 @@ ${summary.trim()}
 `;
 
 		body = format(body);
-		console.info(JSON.stringify(body));
 		body = body.replaceAll(/\n+(?!(•|\*))/g, ' ').replaceAll(/\n(\*)/g, '\n\n$1'); // Remove all internal line breaks that are not succeeded by bullet points or headers
 		console.info(body);
 
