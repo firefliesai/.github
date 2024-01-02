@@ -45,7 +45,31 @@ const slackIDs = {
 	'kashyap-sojitra': 'U05RBAXUJUX',
 	'htkimura': 'U061P10ADNV',
 	'ghimire007': 'U065MEQ96AU',
-	'fisfat': 'UKLEEP4F6'
+	'fisfat': 'UKLEEP4F6',
+	'gabrielcsf': 'U06180NQGPQ',
+	'Serdar-FF': 'U067AUL8HG8',
+	'atomicman57': 'U8EGXN80Z',
+	'cchitsiang': 'U0544MQ3ZNK',
+	'cokpakpo': 'U016WC4SFK6',
+	'darangi': 'U03D9GMQM7T',
+	'deepak29ff': 'U05R3RBKQ0G',
+	'haziqAhmed92': 'U02HAU99A1G',
+	'jonathantissot': 'U04UV9H5J23',
+	'karchig': 'U01JKURD05U',
+	'willpoint': 'UJ7P83H7T',
+	'zekeri-riya': 'U01374NRKGU',
+	'zypher606': 'U021VD0J2UE',
+	'sleemkeen': 'U01QSFC4QUE',
+	'shivamluthra': 'U043X0VCASE',
+	'samuelfruhauf': 'U02M3F53PU7',
+	'rafakato': 'U02PMSZDNE6',
+	'sahilchauhan36': 'U068VP8DLEL',
+	'mHamza301': 'U022K5F8ZB3',
+	'm3rryqold': 'U0560E5H41F',
+	'mustay': 'U05M9EJMY72',
+	'MBilal07': 'U022EQJQBMF',
+	'marinamsm': 'U02GY8JRYLA',
+	'alirazachishti': 'U01FPUCJDP1'
 }
 
 module.exports = {
