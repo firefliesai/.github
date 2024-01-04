@@ -80,6 +80,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const pull_number = ${{ steps.release_workflow.outputs.pull_number }};
+            const pull_numbers_in_release = "${{ steps.release_workflow.outputs.pull_numbers_in_release }}";
+
             const mergedPrNumbers = Array.from(new Set(pull_numbers_in_release.split(',').map(Number)));
 
             const pr = await github.rest.pulls.get({
