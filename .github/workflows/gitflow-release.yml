@@ -80,7 +80,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('${{ github.workspace }}/firefliesai/.github/scripts/gitflow-release.js');
+            const script = require('${{ github.workspace }}/.github/scripts/gitflow-release.js');
 
             const pull_number = ${{ steps.release_workflow.outputs.pull_number }};
             const pull_numbers_in_release = "${{ steps.release_workflow.outputs.pull_numbers_in_release }}";
