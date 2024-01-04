@@ -33,7 +33,7 @@ export default async ({ core, context, github, pull_number, pull_numbers_in_rele
     ).join('\n');
     return `${pr.data.title}\n${match}`;
   })).then((prs) => prs.filter(Boolean));
-  const releaseSummary = mergedPrs.join('\n');
+  const releaseSummary = mergedPrs.join('\n\n');
 
   // Update the PR body
   await github.rest.pulls.update({

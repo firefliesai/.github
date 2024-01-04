@@ -115,7 +115,7 @@ jobs:
               ).join('\n');
               return `${pr.data.title}\n${match}`;
             })).then((prs) => prs.filter(Boolean));
-            const releaseSummary = mergedPrs.join('\n');
+            const releaseSummary = mergedPrs.join('\n\n');
 
             // Update the PR body
             await github.rest.pulls.update({
