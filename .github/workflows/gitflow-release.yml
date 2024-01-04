@@ -100,7 +100,7 @@ jobs:
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
           merge_back_from_main: ${{ inputs.merge_back_from_main }}
-          release_summary: ${{ steps.generate_pr_summary.outputs.releaseSummary }}
+          release_summary: ${{ fromJSON(steps.generate_pr_summary.outputs.result).releaseSummary }}
           slack: >
             {
               "channel": "feature-rollout",
@@ -143,4 +143,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          VERSION: ${{ steps.generate_pr_summary.outputs.version }}
+          VERSION: ${{ fromJSON(steps.generate_pr_summary.outputs.result).version }}
