@@ -26,10 +26,14 @@ export default async ({ core, context, github, pull_number, pull_numbers_in_rele
       return;
     }
     const regex = /\#\# What does this PR do\?([\s\S]*?)\n\#\#/gm;
-    const match = regex.exec(pr.data.body)
-    return match?.[1]?.trim();
+    let match = regex.exec(pr.data.body)?.[1]?.trim();
+    // try to remove empty lines
+    match = match?.split('\n').map(s => s.trim()).filter(Boolean).map(
+      s => s.startsWith('-') || s.startsWith('*') ? s : `* ${s}`
+    ).join('\n');
+    return `${pr.data.title}\n${match}`;
   })).then((prs) => prs.filter(Boolean));
-  const releaseSummary = mergedPrs.map(pr => pr?.includes("\n") ? pr : `* ${pr}`).join('\n');
+  const releaseSummary = mergedPrs.join('\n');
 
   // Update the PR body
   await github.rest.pulls.update({
@@ -38,5 +42,4 @@ export default async ({ core, context, github, pull_number, pull_numbers_in_rele
     pull_number,
     body: body.replace("## Release summary", `## Release summary\n\n${releaseSummary}`)
   });
-
 };

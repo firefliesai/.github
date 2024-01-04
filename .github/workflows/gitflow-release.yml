@@ -80,9 +80,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const pull_number = ${{ steps.release_workflow.outputs.pull_number }};
-            const pull_numbers_in_release = "${{ steps.release_workflow.outputs.pull_numbers_in_release }}";
-
             const mergedPrNumbers = Array.from(new Set(pull_numbers_in_release.split(',').map(Number)));
 
             const pr = await github.rest.pulls.get({
@@ -108,10 +105,14 @@ jobs:
                 return;
               }
               const regex = /\#\# What does this PR do\?([\s\S]*?)\n\#\#/gm;
-              const match = regex.exec(pr.data.body)
-              return match?.[1]?.trim();
+              let match = regex.exec(pr.data.body)?.[1]?.trim();
+              // try to remove empty lines
+              match = match?.split('\n').map(s => s.trim()).filter(Boolean).map(
+                s => s.startsWith('-') || s.startsWith('*') ? s : `* ${s}`
+              ).join('\n');
+              return `${pr.data.title}\n${match}`;
             })).then((prs) => prs.filter(Boolean));
-            const releaseSummary = mergedPrs.map(pr => pr?.includes("\n") ? pr : `* ${pr}`).join('\n');
+            const releaseSummary = mergedPrs.join('\n');
 
             // Update the PR body
             await github.rest.pulls.update({
