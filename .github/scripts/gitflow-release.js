@@ -45,5 +45,9 @@ export default async ({ core, context, github, pull_numbers_in_release, latest_r
   else if (bumpType === 1) minor += 1;
   else patch += 1;
   version = `${major}.${minor}.${patch}`;
+
+  console.log(`Determined suggested version: ${version} (${['patch', 'minor', 'major'][bumpType]})`)
+  console.log(`Release summary:\n${releaseSummary}`);
+
   return { releaseSummary, version };
 };
