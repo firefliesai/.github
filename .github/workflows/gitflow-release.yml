@@ -31,6 +31,8 @@ jobs:
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
           dry_run: "true"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - id: generate_pr_summary
         name: generate PR summary
