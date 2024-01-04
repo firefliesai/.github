@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: release_workflow
-        uses: hoangvvo/gitflow-workflow-action@0.3.2
+        uses: hoangvvo/gitflow-workflow-action@0.3.3
         with:
           version: ${{ inputs.version }}
           develop_branch: ${{ inputs.develop_branch }}
