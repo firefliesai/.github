@@ -1,3 +1,5 @@
+# DEPRECATED - USE gitflow-release instead
+
 on:
   workflow_call:
     inputs:
@@ -15,7 +17,7 @@ jobs:
   create_release:
     runs-on: ubuntu-latest
     steps:
-      - uses: hoangvvo/gitflow-workflow-action@0.2.4
+      - uses: hoangvvo/gitflow-workflow-action@0.3.3
         with:
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
