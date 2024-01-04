@@ -39,7 +39,7 @@ jobs:
         if: ${{ steps.release_workflow_dry_run.outputs.type == 'release' && steps.release_workflow_dry_run.outputs.pull_numbers_in_release }}
         uses: actions/github-script@v7
         with:
-          scripts: |
+          script: |
             const pull_numbers_in_release = '${{ steps.release_workflow_dry_run.outputs.pull_numbers_in_release }}';
             const latest_release_tag_name = '${{ steps.release_workflow_dry_run.outputs.latest_release_tag_name }}';
 
