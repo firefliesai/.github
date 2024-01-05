@@ -22,20 +22,12 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/auto_announce.js
-            .github/scripts/release.yml
       - name: Install slack and markdown packages
         env:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
-          ls -al .github
-          ls -al ./firefliesai/github/scripts
-          [ ! -f ./.github/release.yml ] && echo "1: No config file" || echo "1: config file present"
-          [ ! -f ./.github/release.yml ] && [ -f ./firefliesai/.github/scripts/release.yml ] && mv ./firefliesai/.github/scripts/release.yml ./.github/release.yml
-          [ ! -f ./.github/release.yml ] && echo "2: No config file" || echo "2: config file present"
           [ -f package.json ] && mv package.json package.json.xx
           npm install slackify-markdown @slack/web-api
-          ls -al .github
-          ls -al .github/scripts
       - name: Create release and announce on slack
         uses: actions/github-script@v6
         env:
@@ -47,4 +39,4 @@ jobs:
             const script = require('${{ github.workspace }}/firefliesai/.github/scripts/auto_announce.js');
 
             const release = await script.createRelease({ github, context });
-            // await script.notifySlack({ WebClient, release, format, context });
+            await script.notifySlack({ WebClient, release, format, context });

@@ -17,13 +17,11 @@ const computeReleaseName = ({ name, isFeature, isBreaking }) => {
 
 const getCommitPullRequestBody = async ({ github, context, message }) => {
 	const prNumber = message.replace(/^Merge pull request #(\d+) (.|\n|\r)+$/, '$1'); // Extract commit pr number
-	console.log(prNumber);
 
 	const { data: pullRequest } = await github.rest.pulls.get({
 		...context.repo,
 		pull_number: Number(prNumber),
 	});
-	console.log(pullRequest);
 
 	if (!pullRequest?.title?.includes('Deploy to production')) return '';
 	return pullRequest.body;
