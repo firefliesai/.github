@@ -22,11 +22,13 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/auto_announce.js
+            .github/scripts/release.yml
       - name: Install slack and markdown packages
         env:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
           [ -f package.json ] && mv package.json package.json.xx
+          [ ! -f ./.github/release.yml ] && [ -f ./.github/scripts/release.yml ] && mv ./.github/scripts/release.yml ./.github/release.yml
           npm install slackify-markdown @slack/web-api
       - name: Create release and announce on slack
         uses: actions/github-script@v6
