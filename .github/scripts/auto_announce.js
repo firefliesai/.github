@@ -30,16 +30,14 @@ const getCommitPullRequestBody = async ({ github, context, message }) => {
 }
 
 const computeReleaseBody = async (params) => {
-	let body = '';
-	const { message } = params;
+	let { message } = params;
 
 	if (/^Merge pull request/.test(message)) {
-		body = await getCommitPullRequestBody(params);
-	} else if (/^(.|\n|\r)+(## Release Summary)/.test(message)) {
-		body = message.replace(/^(.|\n|\r)+(## Release Summary)/, '$2');
+		message = await getCommitPullRequestBody(params);
 	}
 
-	return body;
+	message = message.replace(/^(.|\n|\r)+(## Release Summary)/, '$2');
+	return message;
 }
 
 const slackIDs = {
