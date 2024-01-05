@@ -27,9 +27,15 @@ jobs:
         env:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
-          [ -f package.json ] && mv package.json package.json.xx
+          ls -al .github
+          ls -al .github/scripts
+          [ ! -f ./.github/release.yml ] && echo "1: No config file" || echo "1: config file present"
           [ ! -f ./.github/release.yml ] && [ -f ./.github/scripts/release.yml ] && mv ./.github/scripts/release.yml ./.github/release.yml
+          [ ! -f ./.github/release.yml ] && echo "2: No config file" || echo "2: config file present"
+          [ -f package.json ] && mv package.json package.json.xx
           npm install slackify-markdown @slack/web-api
+          ls -al .github
+          ls -al .github/scripts
       - name: Create release and announce on slack
         uses: actions/github-script@v6
         env:
