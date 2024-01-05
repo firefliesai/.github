@@ -39,4 +39,4 @@ jobs:
             const script = require('${{ github.workspace }}/firefliesai/.github/scripts/auto_announce.js');
 
             const release = await script.createRelease({ github, context });
-            await script.notifySlack({ WebClient, release, format, context });
+            # await script.notifySlack({ WebClient, release, format, context });

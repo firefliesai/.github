@@ -15,6 +15,33 @@ const computeReleaseName = ({ name, isFeature, isBreaking }) => {
 	return `v${version.join('.')}`;
 }
 
+const getCommitPullRequestBody = async ({ github, context, message }) => {
+	const prNumber = message.replace(/^Merge pull request #(\d+) (.|\n|\r)+$/, '$1'); // Extract commit pr number
+	console.log(prNumber);
+
+	const { data: pullRequest } = await github.rest.pulls.get({
+		...context.repo,
+		pull_number: Number(prNumber),
+	});
+	console.log(pullRequest);
+
+	if (!pullRequest?.title?.includes('Deploy to production')) return '';
+	return pullRequest.body;
+}
+
+const computeReleaseBody = async (params) => {
+	let body = '';
+	const { message } = params;
+
+	if (/^Merge pull request/.test(message)) {
+		body = await getCommitPullRequestBody(params);
+	} else if (/^(.|\n|\r)+(## Release Summary)/.test(message)) {
+		body = message.replace(/^(.|\n|\r)+(## Release Summary)/, '$2');
+	}
+
+	return body;
+}
+
 const slackIDs = {
 	'anooppoommen': 'U038VBD2XCP',
 	'dmkorb': 'U0256NC37GT',
@@ -69,7 +96,8 @@ const slackIDs = {
 	'mustay': 'U05M9EJMY72',
 	'MBilal07': 'U022EQJQBMF',
 	'marinamsm': 'U02GY8JRYLA',
-	'alirazachishti': 'U01FPUCJDP1'
+	'alirazachishti': 'U01FPUCJDP1',
+	'ndeitch': 'U024CECHHBP'
 }
 
 module.exports = {
@@ -96,12 +124,17 @@ module.exports = {
 			commit_sha: sha
 		})
 
-		const body = commit.message.replace(/^(.|\n|\r)+(## Release Summary)/, '$2'); // Remove pr title from body
+		const { message } = commit;
+		const body = await computeReleaseBody({ github, context, message })
 		const tagName = computeReleaseName({
 			name: latest.tag_name,
-			isFeature: /- New Feature/gm.test(commit.message),
-			isBreaking: /- Breaking Change/gm.test(commit.message)
+			isFeature: /- New Feature/gm.test(message),
+			isBreaking: /- Breaking Change/gm.test(message)
 		});
+
+		console.log(message);
+		console.log(tagName);
+		console.log(body);
 
 		const { data: release } = await github.rest.repos.createRelease({
 			...context.repo,
