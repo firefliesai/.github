@@ -28,9 +28,9 @@ jobs:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
           ls -al .github
-          ls -al .github/scripts
+          ls -al ../firefliesai/github/scripts
           [ ! -f ./.github/release.yml ] && echo "1: No config file" || echo "1: config file present"
-          [ ! -f ./.github/release.yml ] && [ -f ./.github/scripts/release.yml ] && mv ./.github/scripts/release.yml ./.github/release.yml
+          [ ! -f ./.github/release.yml ] && [ -f ../firefliesai/.github/scripts/release.yml ] && mv ../firefliesai/.github/scripts/release.yml ./.github/release.yml
           [ ! -f ./.github/release.yml ] && echo "2: No config file" || echo "2: config file present"
           [ -f package.json ] && mv package.json package.json.xx
           npm install slackify-markdown @slack/web-api
