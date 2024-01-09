@@ -26,7 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: release_workflow_dry_run
-        uses: hoangvvo/gitflow-workflow-action@0.3.5
+        if: github.event_name == 'workflow_dispatch'
+        uses: hoangvvo/gitflow-workflow-action@0.3.6
         with:
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
@@ -100,7 +101,7 @@ jobs:
             }
 
       - id: release_workflow
-        uses: hoangvvo/gitflow-workflow-action@0.3.5
+        uses: hoangvvo/gitflow-workflow-action@0.3.6
         with:
           version: ${{ inputs.version }}
           develop_branch: ${{ inputs.develop_branch }}
