@@ -76,7 +76,7 @@ jobs:
                   summary: match,
                   type,
                 }
-              })).then((prs) => prs.filter(pr => !!pr));
+              })).then((prs) => prs.filter(pr => !!pr?.summary));
               
               const releaseSummary = mergedPrs.map((pr) => {
                 return `${pr.title}\n${pr.summary}`;
