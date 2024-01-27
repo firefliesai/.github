@@ -21,13 +21,19 @@ on:
         type: string
         description: "Merge back from production branch instead of release branch to staging branch"
 
+      package_json_update_version:
+        required: false
+        default: false
+        type: boolean
+        description: "Set to true to update package.json version to the release version"
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - id: release_workflow_dry_run
         if: github.event_name == 'workflow_dispatch'
-        uses: hoangvvo/gitflow-workflow-action@0.3.6
+        uses: hoangvvo/gitflow-workflow-action@0.3.7
         with:
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
@@ -54,10 +60,7 @@ jobs:
                   repo: context.repo.repo,
                   pull_number: prNumber
                 });
-                const body = pr.data.body;
-                if (!body) {
-                  return;
-                }
+                const body = pr.data.body || "";
                 const regex = /\#\# What does this PR do\?([\s\S]*?)\n\#\#/gm;
                 let match = regex.exec(body)?.[1]?.trim();
                 
@@ -76,38 +79,34 @@ jobs:
                   summary: match,
                   type,
                 }
-              })).then((prs) => prs.filter(pr => !!pr?.summary));
+              })).then((prs) => prs.filter(pr => !!pr));
               
               const releaseSummary = mergedPrs.map((pr) => {
                 return `${pr.title}\n${pr.summary}`;
               }).join('\n\n');
 
-              let version = latest_release_tag_name || "0.0.0";
-              const bumpType = Math.max(...mergedPrs.map((pr) => pr.type));
-              let [major, minor, patch] = version.split('.').map(Number);
-              if (bumpType === 2) major += 1;
-              else if (bumpType === 1) minor += 1;
-              else patch += 1;
-              version = `${major}.${minor}.${patch}`;
+              const versionIncrementType = Math.max(...mergedPrs.map((pr) => pr.type));
+              const versionIncrement = ['patch', 'minor', 'major'][versionIncrementType] || 'patch';
 
-              console.log(`Determined suggested version: ${version} (${['patch', 'minor', 'major'][bumpType]})`)
+              console.log(`Determined suggested version increment (${versionIncrement})`)
               console.log(`Release summary:\n${releaseSummary}`);
 
               core.setOutput('release_summary', releaseSummary);
-              core.setOutput('version', version);
+              core.setOutput('version_increment', versionIncrement);
             } catch (error) {
-              console.log(`Could not determine release summary and version`)
+              console.log(`Could not determine release summary and version_increment`)
               console.log(error)
             }
 
       - id: release_workflow
-        uses: hoangvvo/gitflow-workflow-action@0.3.6
+        uses: hoangvvo/gitflow-workflow-action@0.3.7
         with:
           version: ${{ inputs.version }}
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
           merge_back_from_main: ${{ inputs.merge_back_from_main }}
           release_summary: ${{ steps.generate_pr_summary.outputs.release_summary }}
+          version_increment: ${{ steps.generate_pr_summary.outputs.version_increment }}
           slack: >
             {
               "channel": "feature-rollout",
@@ -173,4 +172,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          VERSION: ${{ steps.generate_pr_summary.outputs.version }}
+
+      - uses: actions/checkout@v4 #check out to the release branch to bump package json version
+        if: ${{ steps.release_workflow.outputs.release_branch && inputs.package_json_update_version }}
+        with:
+          ref: ${{ steps.release_workflow.outputs.release_branch }}
+
+      - name: Update package.json version
+        if: ${{ steps.release_workflow.outputs.release_branch && inputs.package_json_update_version }}
+        run: |
+          npm version ${{ steps.release_workflow.outputs.version }}
+          git commit -a -m "version: ${{ steps.release_workflow.outputs.version }}"
+          git push origin ${{ steps.release_workflow.outputs.release_branch }}
