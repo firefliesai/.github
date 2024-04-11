@@ -37,7 +37,7 @@ jobs:
         id: deploy
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.TRIGGER_TOKEN }} || ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.FIREFLIES_BOT_TOKEN }}
           script: |
             const script = require('${{ github.workspace }}/firefliesai/.github/scripts/auto_release.js');
 
