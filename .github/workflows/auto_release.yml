@@ -15,6 +15,9 @@ on:
         default: 'main'
         required: false
         type: string
+      trigger_token:
+        required: false
+        type: string
 
 jobs:
   create_deployment:
@@ -32,11 +35,17 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/auto_release.js
+
+      - name: Add Trigger Token to env
+        run: |
+          $token = ${{ inputs.trigger_token }} || ${{ secrets.GITHUB_TOKEN }}
+          echo "TRIGGER_TOKEN=$token" >> $GITHUB_ENV
+
       - name: Create deployment PR
         id: deploy
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ env.TRIGGER_TOKEN }}
           script: |
             const script = require('${{ github.workspace }}/firefliesai/.github/scripts/auto_release.js');
 
