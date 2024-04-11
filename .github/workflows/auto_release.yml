@@ -15,9 +15,6 @@ on:
         default: 'main'
         required: false
         type: string
-      trigger_token:
-        required: false
-        type: string
 
 jobs:
   create_deployment:
@@ -38,7 +35,7 @@ jobs:
 
       - name: Add Trigger Token to env
         run: |
-          $token = ${{ inputs.trigger_token }} || ${{ secrets.GITHUB_TOKEN }}
+          $token = ${{ secrets.TRIGGER_TOKEN }} || ${{ secrets.GITHUB_TOKEN }}
           echo "TRIGGER_TOKEN=$token" >> $GITHUB_ENV
 
       - name: Create deployment PR
