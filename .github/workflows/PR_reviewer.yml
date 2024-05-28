@@ -42,6 +42,8 @@ jobs:
             const OpenAI = require('openai');
             const { WebClient } = require('@slack/web-api');
             const format = require('slackify-markdown');
+            const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
+            console.log('import reviewPR', reviewPR);
             if (!process.env.GTP_TOKEN) {
                throw new Error('GTP_TOKEN is not set');
             }
@@ -51,7 +53,6 @@ jobs:
             if (!process.env.SLACK_TOKEN) {
                throw new Error('SLACK_TOKEN is not set');
             }
-            const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
             // OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
             const octokit = new Octokit({
               auth: process.env.GTP_TOKEN,
