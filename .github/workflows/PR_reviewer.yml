@@ -36,7 +36,8 @@ jobs:
             const OpenAI = require('openai');
             const { WebClient } = require('@slack/web-api');
             const format = require('slackify-markdown');
-            const { reviewPR } = require('${{ github.workspace }}/scripts/pr_reviewer.js');
+            console.log('workspace...', '${{ github.workspace }}');
+            const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
             // OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
             const octokit = new Octokit({
               auth: process.env.GTP_TOKEN,
