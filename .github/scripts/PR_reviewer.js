@@ -12,10 +12,10 @@ const getPromptPRDescription = (description) =>
 
 const commentPR =  async (data) => {
 	try {
-		const { octokit, repoOwner, repoName, issueId, comment } = data;
+		const { octokit, context, issueId, comment } = data;
 		const commentRes = await octokit.rest.issues.createComment({
-			owner: repoOwner,
-			repo: repoName,
+			owner: context.payload.organization.login,
+			repo: context.payload.repository.name,
 			issue_number: issueId,
 			body: comment,
 		});
@@ -28,7 +28,12 @@ const commentPR =  async (data) => {
 
 const notifySlack = async (data) => {
 	try {
-		const { repoOwner, repoName, link, title, sectionTitle, reviewTitle, slack, bodyPR, reviewPR, format } = data;
+		const { context, sectionTitle, reviewTitle, slack, reviewPR, format } = data;
+		const title = context.payload.pull_request.title;
+		const bodyPR = context.payload.pull_request.body;
+		const link = context.payload.pull_request.html_url;
+		const repoOwner = context.payload.organization.login;
+		const repoName = context.payload.repository.name;
 		let body = bodyPR + reviewPR;
 		console.info('original body:', JSON.stringify(body));
 		body = body.replaceAll(/\n\s+-/g, '\n-'); // Remove white space between line break and bullet
@@ -66,25 +71,21 @@ module.exports = {
 	reviewPR: async ({ openai, octokit, slack, format, context }) => {
 		console.log('Reviewing PR...');
 		const pullRequest = context.payload.pull_request.number;
-		const title = context.payload.pull_request.title;
 		const descriptionPR = context.payload.pull_request.body;
-		const link = context.payload.pull_request.html_url;
 		const promptPRDescription = getPromptPRDescription(descriptionPR);
 		const reviewTitle = '### Authentication and Authorization';
 		const sectionTitle = '## What does this PR do?';
-		const repoOwner = context.payload.organization.login;
-		const repoName = context.payload.repository.name;
 		const noDescriptionBody = `${reviewTitle}\n**No PR description provided**: Please provide a description for the PR.\n`;
 		
 		if (!promptPRDescription) {
-			await commentPR({ octokit, repoOwner, repoName, issueId: pullRequest, comment: noDescriptionBody });
+			await commentPR({ octokit, context, issueId: pullRequest, comment: noDescriptionBody });
 			return;
 		}
 		
 		if (promptPRDescription.includes('What does this PR do?') && promptPRDescription.includes('Type of change')) {
 			const description = promptPRDescription.split('What does this PR do?')[1].split('## Type of change')[0].trim();
 			if (!description || description.includes('xxx')) {
-				await commentPR({ octokit, repoOwner, repoName, issueId: pullRequest, comment: noDescriptionBody });
+				await commentPR({ octokit, context, issueId: pullRequest, comment: noDescriptionBody });
 				return;
 			}
 		}
@@ -97,17 +98,13 @@ module.exports = {
 				max_tokens: 2048,
 			}))?.choices[0].message.content;
 			const review = `${reviewTitle}\n${reviewDescription}`;
-			await commentPR({ octokit, repoOwner, repoName, issueId: pullRequest, comment: review });
+			await commentPR({ octokit, context, issueId: pullRequest, comment: review });
 			if (!review.includes('The description does not mention any changes related to authentication or authorization')) {
 				await notifySlack({
-					repoOwner,
-					repoName,
-					link,
-					title,
+					context,
 					sectionTitle,
 					reviewTitle,
 					slack,
-					bodyPR: descriptionPR,
 					reviewPR: review,
 					format,
 				});
@@ -116,8 +113,7 @@ module.exports = {
 			console.error('Error generating description review:', e);
 			await commentPR({
 				octokit,
-				repoOwner,
-				repoName,
+				context,
 				issueId: pullRequest,
 				comment: `${reviewTitle}\n**Error**: OpenAI error when reviewing the PR description.\n`,
 			});
