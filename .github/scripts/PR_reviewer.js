@@ -1,4 +1,5 @@
-const { getPromptPRDescription } = require('../prompts');
+const path = require('node:path');
+const { getPromptPRDescription } = require(path.join(__dirname, '..', 'prompts'));
 
 module.exports = {
 	reviewPR: async ({ openai, octokit, slack, format, context }) => {
