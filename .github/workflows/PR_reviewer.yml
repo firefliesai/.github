@@ -19,7 +19,7 @@ jobs:
           scope: '@firefliesai'
       - name: Install packages
         env:
-          GTP_TOKEN: ${{ secrets.GIT_TOKEN }}
+          GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
           [ -f package.json ] && mv package.json package.json.xx
           npm install openai @octokit/rest @slack/web-api slackify-markdown
@@ -27,7 +27,7 @@ jobs:
         uses: actions/github-script@v6
         id: reviewer
         env:
-          GTP_TOKEN: ${{ secrets.GIT_TOKEN }}
+          GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         with:
