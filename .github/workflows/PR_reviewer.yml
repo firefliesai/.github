@@ -1,0 +1,51 @@
+name: Pull Request Reviewer
+
+on:
+  pull_request:
+    types: [opened, reopened, edited]
+
+jobs:
+  pr_reviewer_job:
+    runs-on: ubuntu-latest
+    name: A job to review pull request descriptions
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: https://npm.pkg.github.com
+          scope: '@firefliesai'
+      - name: Install packages
+        env:
+          GTP_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: |
+          [ -f package.json ] && mv package.json package.json.xx
+          npm install openai @octokit/rest @slack/web-api slackify-markdown
+      - name: Run PR Reviewer
+        uses: actions/github-script@v6
+        id: reviewer
+        env:
+          GTP_TOKEN: ${{ secrets.GIT_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        with:
+          script: |
+            const { Octokit } = require('@octokit/rest');
+            const OpenAI = require('openai');
+            const { WebClient } = require('@slack/web-api');
+            const format = require('slackify-markdown');
+            const { reviewPR } = require('${{ github.workspace }}/scripts/pr_reviewer.js');
+            // OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
+            const octokit = new Octokit({
+              auth: process.env.GTP_TOKEN,
+              request: {
+                fetch,
+              },
+            });
+            const openai = new OpenAI({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const slack = new WebClient(process.env.SLACK_TOKEN);
+            await reviewPR({ openai, octokit, slack, format, context });
