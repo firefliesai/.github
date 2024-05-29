@@ -3,6 +3,14 @@ name: Pull Request Reviewer
 on:
   pull_request:
     types: [opened, reopened, edited]
+  workflow_call:
+    secrets:
+      SLACK_TOKEN:
+        required: true
+      CROSS_REPO_TOKEN:
+        required: true
+      OPENAI_API_KEY:
+        required: true
 
 jobs:
   pr_reviewer_job:
