@@ -1,8 +1,6 @@
 name: Pull Request Reviewer
 
 on:
-  pull_request:
-    types: [opened, reopened, edited]
   workflow_call:
     secrets:
       SLACK_TOKEN:
