@@ -42,6 +42,7 @@ jobs:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
         with:
           script: |
             const { Octokit } = require('@octokit/rest');
@@ -57,6 +58,9 @@ jobs:
             }
             if (!process.env.SLACK_TOKEN) {
                throw new Error('SLACK_TOKEN is not set');
+            }
+            if (!process.env.SLACK_CHANNEL) {
+               throw new Error('SLACK_CHANNEL is not set');
             }
             
             const getPromptPRDescription = (description) =>
@@ -112,9 +116,8 @@ jobs:
                 body = format(body);
                 body = body.replaceAll('\\r\\n', '');
                 console.info('body to send to Slack:', body);
-                const slackChannel = 'C075B3XH9AR'; // #dev-github-security
                 const { ok, error } = await slack.chat.postMessage({
-                  channel: slackChannel,
+                  channel: process.env.SLACK_CHANNEL,
                   text: body
                 })
                 if (error) {
