@@ -51,8 +51,7 @@ jobs:
             const OpenAI = require('openai');
             const { WebClient } = require('@slack/web-api');
             const format = require('slackify-markdown');
-            console.log('workspace: ', '${{ github.workspace }}');
-            const { reviewPR } = require('../scripts/PR_reviewer.js');
+            const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
             if (!process.env.GTP_TOKEN) {
                throw new Error('GTP_TOKEN is not set');
             }
