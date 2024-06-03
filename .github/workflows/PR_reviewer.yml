@@ -17,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     name: A job to review pull request descriptions
     steps:
-      - name: Checkout
+      - name: Checkout caller-repo
+        uses: actions/checkout@v4
+      - name: Checkout firefliesai/.github
         uses: actions/checkout@v4
         with:
           repository: firefliesai/.github
