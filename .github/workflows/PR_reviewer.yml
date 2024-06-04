@@ -24,6 +24,7 @@ jobs:
         with:
           repository: firefliesai/.github
           path: firefliesai
+          ref: feat-sc-55595-add-pr-description-reviewer
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/PR_reviewer.js
