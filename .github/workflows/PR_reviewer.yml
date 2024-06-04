@@ -66,6 +66,7 @@ jobs:
               for (const file of files) {
                 // build the full path of the file
                 const filePath = path.join(dir, file);
+                console.log('filePath:', filePath);
                 
                 // get the file stats
                 const fileStat = fs.statSync(filePath);
@@ -81,7 +82,7 @@ jobs:
             }
   
             // start the search in the current workspace
-            searchFile('${{ github.workspace }}', 'PR_reviewer.js');
+            searchFile('${{ github.workspace }}/firefliesai', 'PR_reviewer.js');
             
             const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
             if (!process.env.GTP_TOKEN) {
