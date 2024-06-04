@@ -54,7 +54,8 @@ jobs:
             const { WebClient } = require('@slack/web-api');
             const format = require('slackify-markdown');
             console.log('workspace: ', '${{ github.workspace }}');
-            const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/.github/scripts/PR_reviewer.js');
+            // TODO: remove this and use github.workspace
+            const { reviewPR } = require('/home/runner/work/dashboard-ff/firefliesai/.github/scripts/PR_reviewer.js');
             if (!process.env.GTP_TOKEN) {
                throw new Error('GTP_TOKEN is not set');
             }
