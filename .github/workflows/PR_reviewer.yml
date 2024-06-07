@@ -24,7 +24,6 @@ jobs:
         with:
           repository: firefliesai/.github
           path: firefliesai
-          ref: feat-sc-55595-add-pr-description-reviewer
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/PR_reviewer.js
@@ -50,42 +49,12 @@ jobs:
           SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
         with:
           script: |
-            const fs = require('fs');
-            const path = require('node:path');
             const { Octokit } = require('@octokit/rest');
             const OpenAI = require('openai');
             const { WebClient } = require('@slack/web-api');
             const format = require('slackify-markdown');
-            console.log('workspace: ', '${{ github.workspace }}');
-            
-            function searchFile(dir, fileName) {
-              console.log('dir', dir);
-              // read the contents of the directory
-              const files = fs.readdirSync(dir);
-              
-              // search through the files
-              for (const file of files) {
-                // build the full path of the file
-                const filePath = path.join(dir, file);
-                console.log('filePath:', filePath);
-                
-                // get the file stats
-                const fileStat = fs.statSync(filePath);
-                
-                // if the file is a directory, recursively search the directory
-                if (fileStat.isDirectory()) {
-                  searchFile(filePath, fileName);
-                } else if (file.endsWith(fileName)) {
-                  // if the file is a match, print it
-                  console.log('FOUND:', filePath);
-                }
-              }
-            }
-  
-            // start the search in the current workspace
-            searchFile('${{ github.workspace }}/firefliesai', 'PR_reviewer.js');
-            
             const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
+            
             if (!process.env.GTP_TOKEN) {
                throw new Error('GTP_TOKEN is not set');
             }
@@ -98,6 +67,7 @@ jobs:
             if (!process.env.SLACK_CHANNEL_GIT_SECURITY) {
                throw new Error('SLACK_CHANNEL_GIT_SECURITY is not set');
             }
+            
             // OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
             const octokit = new Octokit({
               auth: process.env.GTP_TOKEN,
