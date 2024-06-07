@@ -97,8 +97,8 @@ module.exports = {
 				max_tokens: 2048,
 			}))?.choices[0].message.content;
 			const review = `${reviewTitle}\n${reviewDescription}`;
-			await commentPR({ octokit, context, issueId: pullRequest, comment: review });
 			if (!review.includes('The description does not mention any changes related to authentication or authorization')) {
+				await commentPR({ octokit, context, issueId: pullRequest, comment: review });
 				await notifySlack({
 					context,
 					sectionTitle,
@@ -110,12 +110,6 @@ module.exports = {
 			}
 		} catch (e) {
 			console.error('Error generating description review:', e);
-			await commentPR({
-				octokit,
-				context,
-				issueId: pullRequest,
-				comment: `${reviewTitle}\n**Error**: OpenAI error when reviewing the PR description.\n`,
-			});
 		}
 	}
 };
