@@ -1,0 +1,82 @@
+name: Pull Request Reviewer
+
+on:
+  workflow_call:
+    secrets:
+      SLACK_TOKEN:
+        required: true
+      CROSS_REPO_TOKEN:
+        required: true
+      OPENAI_API_KEY:
+        required: true
+      SLACK_CHANNEL_GIT_SECURITY:
+        required: true
+
+jobs:
+  pr_reviewer_job:
+    runs-on: ubuntu-latest
+    name: A job to review pull request descriptions
+    steps:
+      - name: Checkout caller-repo
+        uses: actions/checkout@v4
+      - name: Checkout firefliesai/.github
+        uses: actions/checkout@v4
+        with:
+          repository: firefliesai/.github
+          path: firefliesai
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/scripts/PR_reviewer.js
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: https://npm.pkg.github.com
+          scope: '@firefliesai'
+      - name: Install packages
+        env:
+          GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+        run: |
+          [ -f package.json ] && mv package.json package.json.xx
+          npm install openai @octokit/rest @slack/web-api slackify-markdown
+      - name: Run PR Reviewer
+        uses: actions/github-script@v6
+        id: reviewer
+        env:
+          GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
+        with:
+          script: |
+            const { Octokit } = require('@octokit/rest');
+            const OpenAI = require('openai');
+            const { WebClient } = require('@slack/web-api');
+            const format = require('slackify-markdown');
+            const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
+            
+            if (!process.env.GTP_TOKEN) {
+               throw new Error('GTP_TOKEN is not set');
+            }
+            if (!process.env.OPENAI_API_KEY) {
+               throw new Error('OPENAI_API_KEY is not set');
+            }
+            if (!process.env.SLACK_TOKEN) {
+               throw new Error('SLACK_TOKEN is not set');
+            }
+            if (!process.env.SLACK_CHANNEL_GIT_SECURITY) {
+               throw new Error('SLACK_CHANNEL_GIT_SECURITY is not set');
+            }
+            
+            // OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
+            const octokit = new Octokit({
+              auth: process.env.GTP_TOKEN,
+              request: {
+                fetch,
+              },
+            });
+            const openai = new OpenAI({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const slack = new WebClient(process.env.SLACK_TOKEN);
+            await reviewPR({ openai, octokit, slack, format, context });
