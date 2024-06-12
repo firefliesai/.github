@@ -19,6 +19,7 @@ jobs:
     steps:
       - name: Checkout caller-repo
         uses: actions/checkout@v4
+
       - name: Checkout firefliesai/.github
         uses: actions/checkout@v4
         with:
@@ -27,19 +28,39 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/PR_reviewer.js
+
+      - name: Save PR description for caching
+        run: echo "${{ context.payload.pull_request.body }}" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
+
+      - name: Cache PR description
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/firefliesai/.github/PR_description.txt
+          key: cache-pr-${{ context.payload.pull_request.number }}-${{ hashFiles('./firefliesai/.github/PR_description.txt') }}
+
+      - name: Check cache hit
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: echo "Cache hit for PR description, skipping PR Reviewer"
+
       - name: Setup Node
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: https://npm.pkg.github.com
           scope: '@firefliesai'
+
       - name: Install packages
+        if: steps.cache.outputs.cache-hit != 'true'
         env:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
           [ -f package.json ] && mv package.json package.json.xx
           npm install openai @octokit/rest @slack/web-api slackify-markdown
+
       - name: Run PR Reviewer
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/github-script@v6
         id: reviewer
         env:
