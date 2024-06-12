@@ -30,17 +30,17 @@ jobs:
           sparse-checkout: |
             .github/scripts/PR_reviewer.js
 
-      - name: Save PR description for caching
-        run: echo "${{ context.payload.pull_request.body }}" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
+      - name: Save current PR description to file
+        run: echo "${{ github.event.pull_request.body }}" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
 
-      - name: Cache PR description
+      - name: Search PR description in cache
         id: cache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/firefliesai/.github/PR_description.txt
-          key: cache-pr-${{ context.payload.pull_request.number }}-${{ hashFiles('./firefliesai/.github/PR_description.txt') }}
+          key: cache-pr-${{ github.event.pull_request.number }}-${{ hashFiles('./firefliesai/.github/PR_description.txt') }}
 
-      - name: Check cache hit
+      - name: Cache hit
         if: steps.cache.outputs.cache-hit == 'true'
         run: echo "Cache hit for PR description, skipping PR Reviewer"
 
