@@ -25,7 +25,6 @@ jobs:
         with:
           repository: firefliesai/.github
           path: firefliesai
-          ref: chore-sc-56296-cache-PR-description
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/PR_reviewer.js
