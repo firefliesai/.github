@@ -30,7 +30,7 @@ jobs:
             .github/scripts/PR_reviewer.js
 
       - name: Save current PR description to file
-        run: echo "${{ github.event.pull_request.body }}" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
+        run: echo $"${{ github.event.pull_request.body }}" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
 
       - name: Search PR description in cache
         id: cache
