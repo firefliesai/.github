@@ -32,6 +32,7 @@ jobs:
 
       - name: Save current PR description to file
         id: save_pr_description
+        continue-on-error: true
         run: printf "%q" "$(echo ${{ github.event.pull_request.body }})" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
 
       - name: Search PR description in cache
