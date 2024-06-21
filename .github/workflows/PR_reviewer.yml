@@ -73,14 +73,7 @@ jobs:
           SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
         with:
           script: |
-            const OpenAI = require('openai');
-            const { WebClient } = require('@slack/web-api');
-            const format = require('slackify-markdown');
             const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
-            let Octokit;
-            (async () => {
-              ({ Octokit } = await import('@octokit/rest'));
-            })();
             
             if (!process.env.GTP_TOKEN) {
                throw new Error('GTP_TOKEN is not set');
@@ -94,16 +87,5 @@ jobs:
             if (!process.env.SLACK_CHANNEL_GIT_SECURITY) {
                throw new Error('SLACK_CHANNEL_GIT_SECURITY is not set');
             }
-            
-            // OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
-            const octokit = new Octokit({
-              auth: process.env.GTP_TOKEN,
-              request: {
-                fetch,
-              },
-            });
-            const openai = new OpenAI({
-              apiKey: process.env.OPENAI_API_KEY,
-            });
-            const slack = new WebClient(process.env.SLACK_TOKEN);
-            await reviewPR({ openai, octokit, slack, format, context });
+          
+            await reviewPR(context);
