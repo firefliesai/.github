@@ -1,3 +1,27 @@
+const fetch = require('node-fetch');
+const OpenAI = require('openai');
+const format = require('slackify-markdown');
+const { WebClient } = require('@slack/web-api');
+let octokit;
+
+const openai = new OpenAI({
+	apiKey: process.env.OPENAI_API_KEY,
+});
+const slack = new WebClient(process.env.SLACK_TOKEN);
+
+const initializeOctokit = async () => {
+	if (!octokit) {
+		const { Octokit } = await import('@octokit/rest');
+		// OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
+		octokit = new Octokit({
+			auth: process.env.GTP_TOKEN,
+			request: {
+				fetch,
+			},
+		});
+	}
+};
+
 const getPromptPRDescription = (description) =>
 	'Please review the following pull request description for security vulnerabilities, especially about authentication and authorization.' +
 	'Check if the description mentions an authentication or authorization change that might affects a critical endpoint.' +
@@ -67,8 +91,9 @@ ${review.trim()}
 };
 
 module.exports = {
-	reviewPR: async ({ openai, octokit, slack, format, context }) => {
+	reviewPR: async (context) => {
 		console.log('Reviewing PR...');
+		await initializeOctokit();
 		const pullRequest = context.payload.pull_request.number;
 		const descriptionPR = context.payload.pull_request.body;
 		const promptPRDescription = getPromptPRDescription(descriptionPR);
@@ -78,6 +103,7 @@ module.exports = {
 		
 		if (!promptPRDescription) {
 			await commentPR({ octokit, context, issueId: pullRequest, comment: noDescriptionBody });
+			console.log('PR without a description. Nothing to review.');
 			return;
 		}
 		
@@ -85,6 +111,7 @@ module.exports = {
 			const description = promptPRDescription.split('What does this PR do?')[1].split('## Type of change')[0].trim();
 			if (!description || description.includes('xxx')) {
 				await commentPR({ octokit, context, issueId: pullRequest, comment: noDescriptionBody });
+				console.log('PR without a description. Nothing to review.');
 				return;
 			}
 		}
@@ -107,7 +134,10 @@ module.exports = {
 					reviewPR: review,
 					format,
 				});
+				console.log('PR reviewed successfully, check the comment created on the PR and the Slack channel.');
+				return;
 			}
+			console.log('PR reviewed successfully. The description does not mention any changes related to authentication or authorization.');
 		} catch (e) {
 			console.error('Error generating description review:', e);
 		}

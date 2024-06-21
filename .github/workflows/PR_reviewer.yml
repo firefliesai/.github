@@ -30,21 +30,24 @@ jobs:
             .github/scripts/PR_reviewer.js
 
       - name: Save current PR description to file
-        run: echo "${{ github.event.pull_request.body }}" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
+        id: save_pr_description
+        continue-on-error: true
+        run: printf "%q" "$(echo ${{ github.event.pull_request.body }})" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
 
       - name: Search PR description in cache
         id: cache
+        if: steps.save_pr_description.outcome == 'success'
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/firefliesai/.github/PR_description.txt
           key: cache-pr-${{ github.event.pull_request.number }}-${{ hashFiles('./firefliesai/.github/PR_description.txt') }}
 
       - name: Cache hit
-        if: steps.cache.outputs.cache-hit == 'true'
+        if: steps.save_pr_description.outcome == 'success' && steps.cache.outputs.cache-hit == 'true'
         run: echo "Cache hit for PR description, skipping PR Reviewer"
 
       - name: Setup Node
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -52,7 +55,7 @@ jobs:
           scope: '@firefliesai'
 
       - name: Install packages
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'
         env:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
@@ -60,7 +63,7 @@ jobs:
           npm install openai @octokit/rest @slack/web-api slackify-markdown
 
       - name: Run PR Reviewer
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'
         uses: actions/github-script@v6
         id: reviewer
         env:
@@ -70,10 +73,6 @@ jobs:
           SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
         with:
           script: |
-            const { Octokit } = require('@octokit/rest');
-            const OpenAI = require('openai');
-            const { WebClient } = require('@slack/web-api');
-            const format = require('slackify-markdown');
             const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
             
             if (!process.env.GTP_TOKEN) {
@@ -88,16 +87,5 @@ jobs:
             if (!process.env.SLACK_CHANNEL_GIT_SECURITY) {
                throw new Error('SLACK_CHANNEL_GIT_SECURITY is not set');
             }
-            
-            // OCTOKIT REFERENCE: https://octokit.github.io/rest.js/v20
-            const octokit = new Octokit({
-              auth: process.env.GTP_TOKEN,
-              request: {
-                fetch,
-              },
-            });
-            const openai = new OpenAI({
-              apiKey: process.env.OPENAI_API_KEY,
-            });
-            const slack = new WebClient(process.env.SLACK_TOKEN);
-            await reviewPR({ openai, octokit, slack, format, context });
+          
+            await reviewPR(context);
