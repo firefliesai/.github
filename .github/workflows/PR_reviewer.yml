@@ -71,11 +71,14 @@ jobs:
           SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
         with:
           script: |
-            const { Octokit } = require('@octokit/rest');
             const OpenAI = require('openai');
             const { WebClient } = require('@slack/web-api');
             const format = require('slackify-markdown');
             const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
+            let Octokit;
+            (async () => {
+              ({ Octokit } = await import('@octokit/rest'));
+            })();
             
             if (!process.env.GTP_TOKEN) {
                throw new Error('GTP_TOKEN is not set');
