@@ -39,7 +39,6 @@ const computeReleaseBody = async (params) => {
 }
 
 const slackIDs = {
-	'anooppoommen': 'U038VBD2XCP',
 	'dmkorb': 'U0256NC37GT',
 	'rogerpadilla': 'U02FR157SG1',
 	'grimmer0125': 'U03BZH4CYBD',
@@ -52,7 +51,6 @@ const slackIDs = {
 	'greguintow': 'U02DDCN2UDC',
 	'ugokoli': 'U01378G4H28',
 	'sumitkolhe': 'U04PZD94TAR',
-	'debloper': 'USG05RE76',
 	'rgautam98': 'U03AAU48XL3',
 	'ProKashif': 'U01GUG3L4D6',
 	'sudotong': 'U04KDQACM',
@@ -61,7 +59,6 @@ const slackIDs = {
 	'thadeuk': 'U02G82H7QR2',
 	'carloscdante': 'D04HD1C8PMW',
 	'wilforlan': 'UC0UWLSQ2',
-	'hamidladan': 'U043NHY5HNF',
 	'jhho89': 'U01HB1J09PF',
 	'longyarnz': 'UH8DQ3PRA',
 	'xage93': 'U043X1K6810',
@@ -93,7 +90,9 @@ const slackIDs = {
 	'MBilal07': 'U022EQJQBMF',
 	'marinamsm': 'U02GY8JRYLA',
 	'alirazachishti': 'U01FPUCJDP1',
-	'ndeitch': 'U024CECHHBP'
+	'ndeitch': 'U024CECHHBP',
+	'robert-sarosi': 'U06MR0J3MC0',
+	'codinger41': 'U06S3KV9G5P'
 }
 
 module.exports = {
@@ -149,8 +148,8 @@ module.exports = {
 			body = body.replaceAll(pattern, `<@${slackIDs[user]}>`); // Convert github usernames to slack usernames
 		}
 
-		console.info(JSON.stringify(body));
-		body = body.replaceAll(/<![^<]+>/g, ''); // Remove <!-- ... --> strings
+		console.info('Before Formatting: ', body);
+		body = body.replaceAll(/<![^<>]+>/g, ''); // Remove <!-- ... --> strings
 		body = body.replaceAll(/(\w|`)(\n|\r)+(\w|`)/g, '$1 $3'); // Remove unintentional line breaks between words and tilde
 		body = body.replaceAll(/\n\s+-/g, '\n-'); // Remove white space between line break and bullet
 		body = body.replaceAll(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4'); // Convert PR title to hyperlink
@@ -167,7 +166,7 @@ ${summary.trim()}
 
 		body = format(body);
 		body = body.replaceAll(/\n+(?!(•|\*))/g, ' ').replaceAll(/\n(\*)/g, '\n\n$1'); // Remove all internal line breaks that are not succeeded by bullet points or headers
-		console.info(body);
+		console.info('After Formatting: ', body);
 
 		const featureRolloutChannel = 'C0162DEUX08';
 		const slack = new WebClient(process.env.SLACK_TOKEN);
