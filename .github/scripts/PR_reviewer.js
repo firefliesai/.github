@@ -119,7 +119,7 @@ module.exports = {
 		try {
 			const reviewDescription = (await openai.chat.completions.create({
 				messages: [{ role: 'user', content: promptPRDescription }],
-				model: 'gpt-4o',
+				model: 'gpt-4o-mini',
 				temperature: 0.6,
 				max_tokens: 2048,
 			}))?.choices[0].message.content;
