@@ -31,12 +31,13 @@ const getReleaseActions = ({ isFeature, isBugFix, isBreaking }) => {
 
 module.exports = {
 	checkMergeCommit: async ({ github, context }) => {
+		const prRegex = /\(#\d+\)/g;
 		const { data: pushCommit } = await github.rest.git.getCommit({
 			...context.repo,
 			commit_sha: context.sha
 		});
 
-		return pushCommit.parents.length < 2;
+		return pushCommit.parents.length < 2 && !prRegex.test(pushCommit.message);
 	},
 	createDeploymentPR: async ({ github, context }) => {
 		const { data: prs } = await github.rest.pulls.list({

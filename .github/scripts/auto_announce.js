@@ -92,7 +92,12 @@ const slackIDs = {
 	'alirazachishti': 'U01FPUCJDP1',
 	'ndeitch': 'U024CECHHBP',
 	'robert-sarosi': 'U06MR0J3MC0',
-	'codinger41': 'U06S3KV9G5P'
+	'codinger41': 'U06S3KV9G5P',
+	'FoysalOsmany': 'U01UDGB0RR8',
+	'anveshr1': 'U01PC2FDE65',
+	'noghartt': 'U074XBKUX1R',
+	'luckpng': 'U0785C4MZ1A',
+	'Nickrosendo': 'U076TTEDQJX',
 }
 
 module.exports = {
