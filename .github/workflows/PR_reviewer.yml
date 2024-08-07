@@ -1,6 +1,8 @@
 name: Pull Request Reviewer
 
 on:
+  pull_request:
+    types: [opened, reopened, edited]
   workflow_call:
     secrets:
       SLACK_TOKEN:
@@ -25,6 +27,7 @@ jobs:
         with:
           repository: firefliesai/.github
           path: firefliesai
+          ref: chore-sc-58666-add-the-critical-tag-in-the-pr-description
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/PR_reviewer.js
