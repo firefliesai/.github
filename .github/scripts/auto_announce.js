@@ -98,6 +98,7 @@ const slackIDs = {
 	'noghartt': 'U074XBKUX1R',
 	'luckpng': 'U0785C4MZ1A',
 	'Nickrosendo': 'U076TTEDQJX',
+	'asozcan': 'U07FEPGH677'
 }
 
 module.exports = {
