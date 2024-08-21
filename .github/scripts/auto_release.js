@@ -124,7 +124,9 @@ Computing summaries of merged PRs...
 			const pullRequest = allPullRequests[number];
 
 			let message = pullRequest.body.split('What does this PR do?')[1]?.split('#')[0]?.trim(); // Extract the PR summaries from the description body
-			if (!message) return draft;
+			if (!message) {
+				message = pullRequest.title;
+			}
 
 			isBugFix ||= /\[x\] Bugfix/gm.test(pullRequest.body)
 			isFeature ||= /\[x\] Feature/gm.test(pullRequest.body)
