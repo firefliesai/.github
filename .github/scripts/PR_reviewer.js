@@ -77,7 +77,7 @@ ${review.trim()}
 		console.info('body to send to Slack:', body);
 		
 		const { ok, error } = await slack.chat.postMessage({
-			channel: process.env.SLACK_CHANNEL_GIT_SECURITY,
+			channel: 'C075B3XH9AR', // #dev-github-security
 			text: body
 		})
 		if (error) {
