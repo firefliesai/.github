@@ -146,6 +146,19 @@ ${message}`;
 			return draft;
 		}, body);
 
+
+		/** Start: experiment new Release Summary */
+		body += `
+
+## Experimental Release Summary`;
+		body = Object.keys(allPullRequests).reduce((draft, number) => {
+			let message = pullRequest.body.split('What does this PR do?')[1]?.split('#')[0]?.trim(); // Extract the PR summaries from the description body
+			const summaryItem = processString(message, pullRequest.title)
+			draft += `
+			${summaryItem}`;
+		}, body);
+		/** End: experiment new Release Summary */
+
 		const releaseActions = getReleaseActions({ isFeature, isBugFix, isBreaking });
 
 		if (releaseActions.length) {
@@ -165,3 +178,33 @@ ${releaseActions.join('\n')}
 		})
 	}
 }
+
+
+/** used by Experimental Release Summary */
+const processString = (bodyStr, titleStr) => {
+	// Case 2: If bodyStr length is less than or equal to 4, return titleStr
+	if (bodyStr.length <= 4) {
+	  return titleStr;
+	}
+  
+	// Case 3: Check if bodyStr matches the markdown pattern
+	const markdownPattern = /^(.*?)\n((?:[-\d*+]\s+.*\n)+)(.*?)$/s;
+	const markdownMatch = bodyStr.match(markdownPattern);
+  
+	if (markdownMatch) {
+	  const [, firstWords, bulletList] = markdownMatch;
+	  const trimmedFirstWords = firstWords.trim();
+	  const indentedBulletList = bulletList.replace(/^/gm, '  ');
+	  return `\n- ${trimmedFirstWords}\n${indentedBulletList.trimEnd()}`;
+	}
+  
+	// Case 4: If bodyStr is multi-paragraph text
+	if (bodyStr.includes('\n\n')) {
+	  const paragraphs = bodyStr.split('\n\n');
+	  const formattedParagraphs = paragraphs.map(p => `  - ${p.trim()}`).join('\n');
+	  return `\n- ${titleStr}\n${formattedParagraphs}`;
+	}
+  
+	// Case 1: Default case for simple strings
+	return `\n- ${bodyStr}`;
+  };
