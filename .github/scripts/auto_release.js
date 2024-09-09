@@ -188,14 +188,20 @@ const processString = (bodyStr, titleStr) => {
 	}
   
 	// Case 3: Check if bodyStr matches the markdown pattern
-	const markdownPattern = /^(.*?)\n((?:[-\d*+]\s+.*\n)+)(.*?)$/s;
+	const markdownPattern = /^(\s*)((?:[-\d*+]\s+.*\n)+)(.*?)$/s;
 	const markdownMatch = bodyStr.match(markdownPattern);
   
 	if (markdownMatch) {
-	  const [, firstWords, bulletList] = markdownMatch;
-	  const trimmedFirstWords = firstWords.trim();
-	  const indentedBulletList = bulletList.replace(/^/gm, '  ');
-	  return `\n- ${trimmedFirstWords}\n${indentedBulletList.trimEnd()}`;
+	  let [, preListContent, bulletList] = markdownMatch;
+	  let firstWords = preListContent.trim();
+	  
+	  // If there are no words before the list, use titleStr
+	  if (!firstWords) {
+		firstWords = titleStr;
+	  }
+	  
+	  const indentedBulletList = bulletList.replace(/^/gm, '  ').trimEnd();
+	  return `\n- ${firstWords}\n${indentedBulletList}`;
 	}
   
 	// Case 4: If bodyStr is multi-paragraph text
