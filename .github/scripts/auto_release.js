@@ -146,6 +146,19 @@ ${message}`;
 			return draft;
 		}, body);
 
+
+		/** Start: experiment new Release Summary */
+		body += `
+
+## Experimental Release Summary`;
+		body = Object.keys(allPullRequests).reduce((draft, number) => {
+			let message = pullRequest.body.split('What does this PR do?')[1]?.split('#')[0]?.trim(); // Extract the PR summaries from the description body
+			const summaryItem = processString(message, pullRequest.title)
+			draft += `
+			${summaryItem}`;
+		}, body);
+		/** End: experiment new Release Summary */
+
 		const releaseActions = getReleaseActions({ isFeature, isBugFix, isBreaking });
 
 		if (releaseActions.length) {
@@ -165,3 +178,90 @@ ${releaseActions.join('\n')}
 		})
 	}
 }
+
+
+/** used by Experimental Release Summary */
+const processString = (bodyStr, titleStr) => {
+	// Case 2: If bodyStr length is less than or equal to 5, return titleStr
+	if (bodyStr.length <= 5) {
+	  return titleStr;
+	}
+  
+	// Case 3: Check if bodyStr matches the list pattern (bullet or numbered)
+	// This regex matches any content before the list, and then the list itself
+	// '^([\s\S]*?)' matches any characters (including newlines) up to the start of the list
+	// '^((?:[-\d*+]\.?\s+.*(?:\n|$))+)' matches the list items
+	// 'm' flag enables multiline mode, allowing '^' to match the start of each line
+	const listPattern = /^([\s\S]*?)^((?:[-\d*+]\.?\s+.*(?:\n|$))+)/m;
+	const listMatch = bodyStr.match(listPattern);
+  
+	if (listMatch) {
+	  let [, preListContent, list] = listMatch;
+	  let firstWords = preListContent.trim();
+	  
+	  // If there are no words before the list, use titleStr
+	  // This ensures we always have a title for the list
+	  if (!firstWords) {
+		firstWords = titleStr;
+	  }
+	  
+	  // Process the list, adding proper indentation
+	  const indentedList = list
+		.trim()
+		.split('\n')
+		.map(line => line.trim())
+		.map(line => {
+		  if (line.match(/^\d+\./)) {
+			// For numbered lists, add two spaces at the beginning and two spaces after the period
+			return `  ${line.replace(/^(\d+\.)/, '$1  ')}`;
+		  } else {
+			// For bullet lists, add two spaces at the beginning
+			return `  ${line}`;
+		  }
+		})
+		.join('\n');
+	  
+	  // Note: Any text after the list is implicitly removed here,
+	  // as we only process the matched list items  
+	  return `\n- ${firstWords}\n${indentedList}`;
+	}
+  
+	// Case 4: If bodyStr is multi-paragraph text
+	if (bodyStr.includes('\n\n')) {
+	  const paragraphs = bodyStr.split('\n\n');
+	  const formattedParagraphs = paragraphs.map(p => `  - ${p.trim()}`).join('\n');
+	  return `\n- ${titleStr}\n${formattedParagraphs}`;
+	}
+  
+	// Case 1: Default case for simple strings
+	return `\n- ${bodyStr}`;
+  };
+
+/** Start: test processString */
+const bodyStrArray = [
+	'Short',
+	'This is a simple string.',
+	'First line.\n- Bullet 1\n- Bullet 2\nLast line.',
+	'Paragraph 1.\n\nParagraph 2.\n\nParagraph 3.',
+	'\n- Bullet 1\n- Bullet 2\n- Bullet 3',
+	'Some words\n1. Number 1\n2. Number 2\n3. Number 3',
+];
+const titleStrArray = [
+  'Title 1',
+  'Title 2',
+  'Title 3',
+  'Title 4',
+  'Title 5',
+  'Title 6',
+];
+const mapReduce = (bodyStrArray, titleStrArray) => {
+  return bodyStrArray.reduce(
+	(result, bodyStr, index) =>
+	result + processString(bodyStr, titleStrArray[index]),
+	'',
+  );
+};  
+// const result = mapReduce(bodyStrArray, titleStrArray);
+// expected: "Title 1\n- This is a simple string.\n- First line.\n  - Bullet 1\n  - Bullet 2\n- Title 4\n  - Paragraph 1.\n  - Paragraph 2.\n  - Paragraph 3.\n- Title 5\n  - Bullet 1\n  - Bullet 2\n  - Bullet 3\n- Some words\n  1.   Number 1\n  2.   Number 2\n  3.   Number 3"
+// console.debug(result);
+  
