@@ -152,6 +152,7 @@ ${message}`;
 
 ## Experimental Release Summary`;
 		body = Object.keys(allPullRequests).reduce((draft, number) => {
+			const pullRequest = allPullRequests[number];
 			let message = pullRequest.body.split('What does this PR do?')[1]?.split('#')[0]?.trim(); // Extract the PR summaries from the description body
 			const summaryItem = processString(message, pullRequest.title)
 			draft += `
