@@ -188,23 +188,29 @@ const processString = (bodyStr, titleStr) => {
 	}
   
 	// Case 3: Check if bodyStr matches the list pattern (bullet or numbered)
+	// This regex matches any content before the list, and then the list itself
+	// '^([\s\S]*?)' matches any characters (including newlines) up to the start of the list
+	// '^((?:[-\d*+]\.?\s+.*(?:\n|$))+)' matches the list items
+	// 'm' flag enables multiline mode, allowing '^' to match the start of each line
 	const listPattern = /^([\s\S]*?)^((?:[-\d*+]\.?\s+.*(?:\n|$))+)/m;
 	const listMatch = bodyStr.match(listPattern);
   
 	if (listMatch) {
 	  let [, preListContent, list] = listMatch;
 	  let firstWords = preListContent.trim();
-  
+	  
 	  // If there are no words before the list, use titleStr
+	  // This ensures we always have a title for the list
 	  if (!firstWords) {
 		firstWords = titleStr;
 	  }
-  
+	  
+	  // Process the list, adding proper indentation
 	  const indentedList = list
 		.trim()
 		.split('\n')
-		.map((line) => line.trim())
-		.map((line) => {
+		.map(line => line.trim())
+		.map(line => {
 		  if (line.match(/^\d+\./)) {
 			// For numbered lists, add two spaces at the beginning and two spaces after the period
 			return `  ${line.replace(/^(\d+\.)/, '$1  ')}`;
@@ -214,22 +220,22 @@ const processString = (bodyStr, titleStr) => {
 		  }
 		})
 		.join('\n');
-  
+	  
+	  // Note: Any text after the list is implicitly removed here,
+	  // as we only process the matched list items  
 	  return `\n- ${firstWords}\n${indentedList}`;
 	}
   
 	// Case 4: If bodyStr is multi-paragraph text
 	if (bodyStr.includes('\n\n')) {
 	  const paragraphs = bodyStr.split('\n\n');
-	  const formattedParagraphs = paragraphs
-		.map((p) => `  - ${p.trim()}`)
-		.join('\n');
+	  const formattedParagraphs = paragraphs.map(p => `  - ${p.trim()}`).join('\n');
 	  return `\n- ${titleStr}\n${formattedParagraphs}`;
 	}
   
 	// Case 1: Default case for simple strings
 	return `\n- ${bodyStr}`;
-};
+  };
 
 /** Start: test processString */
 const bodyStrArray = [
