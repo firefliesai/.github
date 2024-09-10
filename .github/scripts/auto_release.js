@@ -156,6 +156,7 @@ ${message}`;
 			const summaryItem = processString(message, pullRequest.title)
 			draft += `
 			${summaryItem}`;
+			return draft;
 		}, body);
 		/** End: experiment new Release Summary */
 
