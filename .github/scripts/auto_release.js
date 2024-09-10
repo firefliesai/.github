@@ -182,35 +182,80 @@ ${releaseActions.join('\n')}
 
 /** used by Experimental Release Summary */
 const processString = (bodyStr, titleStr) => {
-	// Case 2: If bodyStr length is less than or equal to 4, return titleStr
-	if (bodyStr.length <= 4) {
+	// Case 2: If bodyStr length is less than or equal to 5, return titleStr
+	if (bodyStr.length <= 5) {
 	  return titleStr;
 	}
   
-	// Case 3: Check if bodyStr matches the markdown pattern
-	const markdownPattern = /^(\s*)((?:[-\d*+]\s+.*\n)+)(.*?)$/s;
-	const markdownMatch = bodyStr.match(markdownPattern);
+	// Case 3: Check if bodyStr matches the list pattern (bullet or numbered)
+	const listPattern = /^([\s\S]*?)^((?:[-\d*+]\.?\s+.*(?:\n|$))+)/m;
+	const listMatch = bodyStr.match(listPattern);
   
-	if (markdownMatch) {
-	  let [, preListContent, bulletList] = markdownMatch;
+	if (listMatch) {
+	  let [, preListContent, list] = listMatch;
 	  let firstWords = preListContent.trim();
-	  
+  
 	  // If there are no words before the list, use titleStr
 	  if (!firstWords) {
 		firstWords = titleStr;
 	  }
-	  
-	  const indentedBulletList = bulletList.replace(/^/gm, '  ').trimEnd();
-	  return `\n- ${firstWords}\n${indentedBulletList}`;
+  
+	  const indentedList = list
+		.trim()
+		.split('\n')
+		.map((line) => line.trim())
+		.map((line) => {
+		  if (line.match(/^\d+\./)) {
+			// For numbered lists, add two spaces at the beginning and two spaces after the period
+			return `  ${line.replace(/^(\d+\.)/, '$1  ')}`;
+		  } else {
+			// For bullet lists, add two spaces at the beginning
+			return `  ${line}`;
+		  }
+		})
+		.join('\n');
+  
+	  return `\n- ${firstWords}\n${indentedList}`;
 	}
   
 	// Case 4: If bodyStr is multi-paragraph text
 	if (bodyStr.includes('\n\n')) {
 	  const paragraphs = bodyStr.split('\n\n');
-	  const formattedParagraphs = paragraphs.map(p => `  - ${p.trim()}`).join('\n');
+	  const formattedParagraphs = paragraphs
+		.map((p) => `  - ${p.trim()}`)
+		.join('\n');
 	  return `\n- ${titleStr}\n${formattedParagraphs}`;
 	}
   
 	// Case 1: Default case for simple strings
 	return `\n- ${bodyStr}`;
-  };
+};
+
+/** Start: test processString */
+const bodyStrArray = [
+	'Short',
+	'This is a simple string.',
+	'First line.\n- Bullet 1\n- Bullet 2\nLast line.',
+	'Paragraph 1.\n\nParagraph 2.\n\nParagraph 3.',
+	'\n- Bullet 1\n- Bullet 2\n- Bullet 3',
+	'Some words\n1. Number 1\n2. Number 2\n3. Number 3',
+];
+const titleStrArray = [
+  'Title 1',
+  'Title 2',
+  'Title 3',
+  'Title 4',
+  'Title 5',
+  'Title 6',
+];
+const mapReduce = (bodyStrArray, titleStrArray) => {
+  return bodyStrArray.reduce(
+	(result, bodyStr, index) =>
+	result + processString(bodyStr, titleStrArray[index]),
+	'',
+  );
+};  
+// const result = mapReduce(bodyStrArray, titleStrArray);
+// expected: "Title 1\n- This is a simple string.\n- First line.\n  - Bullet 1\n  - Bullet 2\n- Title 4\n  - Paragraph 1.\n  - Paragraph 2.\n  - Paragraph 3.\n- Title 5\n  - Bullet 1\n  - Bullet 2\n  - Bullet 3\n- Some words\n  1.   Number 1\n  2.   Number 2\n  3.   Number 3"
+// console.debug(result);
+  
