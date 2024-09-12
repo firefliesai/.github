@@ -158,6 +158,7 @@ ${message}`;
 			draft += `
 			${summaryItem}`;
 		}, body);
+		console.debug("body after adding Experimental Release Summary", body)
 		/** End: experiment new Release Summary */
 
 		const releaseActions = getReleaseActions({ isFeature, isBugFix, isBreaking });
@@ -183,6 +184,8 @@ ${releaseActions.join('\n')}
 
 /** used by Experimental Release Summary */
 const processString = (bodyStr, titleStr) => {
+	console.debug("bodyStr of each PR in Experimental Release Summary", bodyStr)
+
 	// Case 2: If bodyStr length is less than or equal to 5, return titleStr
 	if (bodyStr.length <= 5) {
 	  return titleStr;
@@ -200,6 +203,7 @@ const processString = (bodyStr, titleStr) => {
 	  let [, preListContent, list] = listMatch;
 	  let firstWords = preListContent.trim();
 	  
+	  console.debug(`list:${list}, preListContent:${preListContent}; whole listMatch:`,  listMatch)
 	  // If there are no words before the list, use titleStr
 	  // This ensures we always have a title for the list
 	  if (!firstWords) {
@@ -222,6 +226,7 @@ const processString = (bodyStr, titleStr) => {
 		})
 		.join('\n');
 	  
+	  console.debug("organized pr content:"+ `\n- ${firstWords}\n${indentedList}`)
 	  // Note: Any text after the list is implicitly removed here,
 	  // as we only process the matched list items  
 	  return `\n- ${firstWords}\n${indentedList}`;
