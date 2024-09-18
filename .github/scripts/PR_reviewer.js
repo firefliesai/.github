@@ -32,7 +32,8 @@ const getPromptPRDescription = (description) =>
 	'### Review Guidelines\n' +
 	'1. **Critical Endpoint Authentication**: Has the pull request made any changes related to authentication or authorization that could affect critical endpoints or affect users permissions? If no changes like that exist in the description, just respond "The description does not mention any changes related to authentication or authorization"\n' +
 	'2. **Impact Analysis**: Assess the potential impact of these changes on system security and functionality, unless there are no changes related to authentication or authorization, then just respond "The description does not mention any changes related to authentication or authorization".\n' +
-	'3. **Recommendation**: If authentication or authorization changes are present, then recommend a few actions to minimize the risk of those changes, otherwise just respond "No recommendations".\n';
+	'3. **Recommendation**: If authentication or authorization changes are present, then recommend a few actions to minimize the risk of those changes, otherwise just respond "No recommendations".\n' + 
+	'Additionally Please choose a priority between low, medium and high. The priority should be based on your impact analysis/recommendation based on the likelihood for this PR to cause a security concern. Low priority - minor vulnerabilities or concerns that pose little to no immediate risk and can be addressed in future updates. Medium priority - Moderate vulnerabilities or concerns that could potentially impact security or functionality and should be addressed in a reasonable timeframe. High priority - Critical vulnerabilities or concerns that pose significant immediate risks to security or functionality and require urgent attention and resolution. Please share just the priority [low :large_green_circle:, medium :large_yellow_circle:, high :red_circle:] and no additional context. \n';
 
 const commentPR =  async (data) => {
 	try {
