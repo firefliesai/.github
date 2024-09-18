@@ -189,7 +189,7 @@ const processString = (bodyStr, titleStr) => {
 
 	// Case 2: If bodyStr length is less than or equal to 5, return titleStr
 	if (bodyStr.length <= 5) {
-	  return titleStr;
+	  return `\n- ${titleStr}`;
 	}
   
 	// Case 3: Check if bodyStr matches the list pattern (bullet or numbered)
