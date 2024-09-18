@@ -218,8 +218,8 @@ const processString = (bodyStr, titleStr) => {
 		.map(line => line.trim())
 		.map(line => {
 		  if (line.match(/^\d+\./)) {
-			// For numbered lists, add two spaces at the beginning and two spaces after the period
-			return `  ${line.replace(/^(\d+\.)/, '$1  ')}`;
+			// For numbered lists, add two spaces at the beginning but maintain original spacing after the period
+			return `  ${line}`;
 		  } else {
 			// For bullet lists, add two spaces at the beginning
 			return `  ${line}`;
