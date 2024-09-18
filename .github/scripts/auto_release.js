@@ -189,15 +189,15 @@ const processString = (bodyStr, titleStr) => {
 
 	// Case 2: If bodyStr length is less than or equal to 5, return titleStr
 	if (bodyStr.length <= 5) {
-	  return titleStr;
+	  return `\n- ${titleStr}`;
 	}
   
 	// Case 3: Check if bodyStr matches the list pattern (bullet or numbered)
 	// This regex matches any content before the list, and then the list itself
 	// '^([\s\S]*?)' matches any characters (including newlines) up to the start of the list
-	// '^((?:[-\d*+]\.?\s+.*(?:\n|$))+)' matches the list items
+	// '^((?:^[-\d*+]\.?\s+.*(?:\r?\n|$))+)' matches the list items
 	// 'm' flag enables multiline mode, allowing '^' to match the start of each line
-	const listPattern = /^([\s\S]*?)^((?:[-\d*+]\.?\s+.*(?:\n|$))+)/m;
+	const listPattern = /^([\s\S]*?)((?:^[-\d*+]\.?\s+.*(?:\r?\n|$))+)/m;
 	const listMatch = bodyStr.match(listPattern);
   
 	if (listMatch) {
@@ -214,12 +214,12 @@ const processString = (bodyStr, titleStr) => {
 	  // Process the list, adding proper indentation
 	  const indentedList = list
 		.trim()
-		.split('\n')
+		.split(/\r?\n/)
 		.map(line => line.trim())
 		.map(line => {
 		  if (line.match(/^\d+\./)) {
-			// For numbered lists, add two spaces at the beginning and two spaces after the period
-			return `  ${line.replace(/^(\d+\.)/, '$1  ')}`;
+			// For numbered lists, add two spaces at the beginning but maintain original spacing after the period
+			return `  ${line}`;
 		  } else {
 			// For bullet lists, add two spaces at the beginning
 			return `  ${line}`;
@@ -234,8 +234,8 @@ const processString = (bodyStr, titleStr) => {
 	}
   
 	// Case 4: If bodyStr is multi-paragraph text
-	if (bodyStr.includes('\n\n')) {
-	  const paragraphs = bodyStr.split('\n\n');
+	if (bodyStr.includes('\r\n\r\n') || bodyStr.includes('\n\n')) {
+	  const paragraphs = bodyStr.split(/\r?\n\r?\n/);
 	  const formattedParagraphs = paragraphs.map(p => `  - ${p.trim()}`).join('\n');
 	  return `\n- ${titleStr}\n${formattedParagraphs}`;
 	}
@@ -245,6 +245,15 @@ const processString = (bodyStr, titleStr) => {
   };
 
 /** Start: test processString */
+
+const bodyStr = "1. rename \`src/shared\` to \`src/common\` to be distinguishable from \`packages/shared\`. And rename TS alias \`@shared\` to \`@common\`.\r\n"+ 
+"2. move \`src/shared/prompt.ts\` to \`packages/shared/common-prompt.ts\` and \`shared/summary.consts.ts\` to there. Publish a new dummy codex-shared package.\r\n"+
+"3. use experimental release yml file for testing Release Summary in the deployment PR.\r\n"+ 
+"4. [fix(jest): support files under test to use absolute path import src/](https://github.com/firefliesai/codex-ff/pull/1220/commits/5404ba33168e1cbd831d9ea00bf31de716c37c4a)"
+const titleStr = "organize shared stuff";
+// processString(bodyStr, titleStr);
+// console.debug("done testing processString")
+
 const bodyStrArray = [
 	'Short',
 	'This is a simple string.',
@@ -252,6 +261,7 @@ const bodyStrArray = [
 	'Paragraph 1.\n\nParagraph 2.\n\nParagraph 3.',
 	'\n- Bullet 1\n- Bullet 2\n- Bullet 3',
 	'Some words\n1. Number 1\n2. Number 2\n3. Number 3',
+	bodyStr,
 ];
 const titleStrArray = [
   'Title 1',
@@ -260,6 +270,7 @@ const titleStrArray = [
   'Title 4',
   'Title 5',
   'Title 6',
+  titleStr
 ];
 const mapReduce = (bodyStrArray, titleStrArray) => {
   return bodyStrArray.reduce(
@@ -268,7 +279,9 @@ const mapReduce = (bodyStrArray, titleStrArray) => {
 	'',
   );
 };  
-// const result = mapReduce(bodyStrArray, titleStrArray);
+const result = mapReduce(bodyStrArray, titleStrArray);
 // expected: "Title 1\n- This is a simple string.\n- First line.\n  - Bullet 1\n  - Bullet 2\n- Title 4\n  - Paragraph 1.\n  - Paragraph 2.\n  - Paragraph 3.\n- Title 5\n  - Bullet 1\n  - Bullet 2\n  - Bullet 3\n- Some words\n  1.   Number 1\n  2.   Number 2\n  3.   Number 3"
 // console.debug(result);
   
+  
+
