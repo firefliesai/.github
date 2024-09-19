@@ -1,0 +1,7 @@
+with:
+  repository: firefliesai/.github
+  path: firefliesai
+  ref: feature-sc-60183-pr-reviewer-enhancements
+  sparse-checkout-cone-mode: false
+  sparse-checkout: |
+    .github/scripts/PR_reviewer.js
