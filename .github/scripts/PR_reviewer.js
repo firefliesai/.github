@@ -1,4 +1,4 @@
-const { context } = require('@actions/github'); // Use GitHub context for repo details
+const { context } = require('@actions/github');
 const core = require('@actions/core');
 const { OpenAI } = require('openai');
 const format = require('slackify-markdown');
@@ -14,7 +14,7 @@ const openai = new OpenAI({
 
 const slack = new WebClient(core.getInput('SLACK_TOKEN'));
 
-// Initialize Octokit (GitHub client)
+// Initialize Octokit
 const initializeOctokit = async () => {
   if (!octokit) {
     const { Octokit } = await import('@octokit/rest');
