@@ -58,7 +58,7 @@ const commentPR = async (issueId, comment) => {
   }
 };
 
-// Function to fetch and review PR file changes
+// Function to fetch and then review PR file changes
 const fetchPRFiles = async (prNumber) => {
   const files = await octokit.rest.pulls.listFiles({
     owner: context.repo.owner,
