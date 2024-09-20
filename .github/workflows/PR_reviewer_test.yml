@@ -17,7 +17,7 @@ jobs:
           ref: feature-sc-60183-pr-reviewer-enhancements
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            .github/scripts/PR_reviewer.js
+            .github/.github/scripts/PR_reviewer.js
 
       - name: Run PR Reviewer Script
         run: |
