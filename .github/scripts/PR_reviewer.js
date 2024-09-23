@@ -26,21 +26,25 @@ const initializeOctokit = async () => {
 };
 
 // Function to get review prompt for PR description and file changes
-const getPromptPRDescriptionAndFiles = (description, files) => `
+const getPromptPRDescriptionAndFiles = (description, files) => {
+  const fileChanges = files.map(file => `- ${file.filename}\n${file.patch || file.changes}`).join('\n\n');
+
+  return `
 Please review the following pull request for security vulnerabilities, especially related to authentication, authorization, and sensitive data exposure.
-This includes reviewing both the description and the content of the files changed in the pull request.
+This includes reviewing both the description and the actual changes in the files modified in the pull request.
 
 ### Pull Request Description
 ${description}
 
-### Files Changed:
-${files.map(file => `- ${file.filename}`).join('\n')}
+### Files Changed and their Diffs:
+${fileChanges}
 
 ### Review Guidelines
-1. **Critical Endpoint Authentication**: Has the pull request or the file changes made any modifications related to authentication or authorization that could affect critical endpoints or affect users' permissions?
+1. **Critical Endpoint Authentication**: Have the file changes made any modifications related to authentication or authorization that could affect critical endpoints or affect users' permissions?
 2. **Sensitive Data Exposure**: Do the changes in any of the files potentially expose sensitive data or make the application more vulnerable to attacks?
 3. **Recommendation**: If authentication, authorization, or sensitive data concerns are present, recommend a few actions to mitigate the risk; otherwise, state "No recommendations".
-`;
+  `;
+};
 
 // Function to comment on a PR
 const commentPR = async (issueId, comment) => {
@@ -65,7 +69,11 @@ const fetchPRFiles = async (prNumber) => {
     repo: context.repo.repo,
     pull_number: prNumber,
   });
-  return files.data;
+  return files.data.map(file => ({
+    filename: file.filename,
+    patch: file.patch, // contains the actual diff (code changes)
+    changes: file.changes, // gives a summary of the number of changes
+  }));
 };
 
 // Function to notify Slack
@@ -99,7 +107,7 @@ const notifySlack = async (data) => {
     // Thread Reply Body
     let threadBody = bodyPR + reviewPR;
     threadBody = threadBody.replace(/\n\s+-/g, '\n-'); // Remove whitespace between line break and bullet
-    threadBody = threadBody.replace(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4'); // Convert PR title to hyperlink
+    threadBody = threadBody.replace(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4');
 
     const summary = threadBody.split(sectionTitle)?.[1]?.split('## Type of change')[0]?.trim() || '';
     const review = threadBody.split(reviewTitle)?.[1]?.trim() || '';
