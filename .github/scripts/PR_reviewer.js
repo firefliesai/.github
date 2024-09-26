@@ -12,7 +12,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || core.getInput('OPENAI_API_KEY'),
 });
 
-const slack = new WebClient(core.getInput('SLACK_TOKEN'));
+const slack = new WebClient(process.env.SLACK_TOKEN || core.getInput('SLACK_TOKEN'));
 
 // Initialize Octokit
 const initializeOctokit = async () => {
