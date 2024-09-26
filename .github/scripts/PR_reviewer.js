@@ -27,9 +27,9 @@ const initializeOctokit = async () => {
 
 // Function to get review prompt for PR description and file changes
 const getPromptPRDescriptionAndFiles = (description, files) => {
-  const fileChanges = files.map(file => `- ${file.filename}\n${file.patch || file.changes}`).join('\n\n');
+  const fileChanges = files.map(file => `- ${String(file.filename)}\n${String(file.patch || file.changes)}`).join('\n\n');
 
-  return `
+  return outdent`
 Please review the following pull request for security vulnerabilities, especially related to authentication, authorization, and sensitive data exposure.
 This includes reviewing both the description and the actual changes in the files modified in the pull request.
 
@@ -145,7 +145,7 @@ const notifySlack = async (data) => {
 };
 
 // Function to get priority prompt
-const getPriorityPrompt = (review) => `
+const getPriorityPrompt = (review) => outdent`
 Please choose a priority between low, medium and high. The priority should be based on your impact analysis/recommendation based on the likelihood for this PR to cause a security concern. 
 Low priority - minor vulnerabilities or concerns that pose little to no immediate risk and can be addressed in future updates. 
 Medium priority - Moderate vulnerabilities or concerns that could potentially impact security or functionality and should be addressed in a reasonable timeframe. 
@@ -190,7 +190,7 @@ const reviewPR = async () => {
     // Generate review from OpenAI
     const reviewDescription = (await openai.chat.completions.create({
       messages: [{ role: 'user', content: promptPRDescription }],
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       temperature: 0.6,
       max_tokens: 2048,
     }))?.choices[0].message.content;
