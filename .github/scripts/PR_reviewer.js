@@ -127,7 +127,7 @@ const notifySlack = async (data) => {
 
     // Send the Thread Reply to Slack under the Main Post
     const { ok: threadOk, error: threadError } = await slack.chat.postMessage({
-      channel: 'C07M93ERY6N', // #dele-test
+      channel: 'C075B3XH9AR', // #dev-github-security
       text: formattedThreadReply,
       thread_ts: ts,
     });
