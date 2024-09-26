@@ -116,7 +116,7 @@ const notifySlack = async (data) => {
 
     // Send the Main Post to Slack
     const { ok: postOk, ts, error: postError } = await slack.chat.postMessage({
-      channel: 'C07M93ERY6N', // #dele-test
+      channel: 'C075B3XH9AR', // #dev-github-security
       text: mainPostBody,
     });
 
