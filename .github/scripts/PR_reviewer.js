@@ -9,7 +9,7 @@ let octokit;
 
 // Initialize OpenAI and Slack clients
 const openai = new OpenAI({
-  apiKey: core.getInput('OPENAI_API_KEY'),
+  apiKey: process.env.OPENAI_API_KEY || core.getInput('OPENAI_API_KEY'),
 });
 
 const slack = new WebClient(core.getInput('SLACK_TOKEN'));
