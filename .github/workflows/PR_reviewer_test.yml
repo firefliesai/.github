@@ -1,0 +1,24 @@
+name: PR Reviewer Test Workflow 
+
+on:
+  pull_request:  
+    branches:
+      - feature-sc-60183-pr-reviewer-enhancements
+
+jobs:
+  pr-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the .github repo
+        uses: actions/checkout@v2
+        with:
+          repository: firefliesai/.github
+          path: firefliesai
+          ref: feature-sc-60183-pr-reviewer-enhancements
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/.github/scripts/PR_reviewer.js
+
+      - name: Run PR Reviewer Script
+        run: |
+          node firefliesai/.github/.github/scripts/PR_reviewer.js
