@@ -6,17 +6,17 @@ on:
       develop_branch:
         required: true
         type: string
-        description: "Staging branch"
+        description: 'Staging branch'
 
       main_branch:
         required: true
         type: string
-        description: "Production branch"
+        description: 'Production branch'
 
       version:
         required: true
         type: string
-        description: "Version to release"
+        description: 'Version to release'
 
 jobs:
   create_release:
@@ -28,4 +28,4 @@ jobs:
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FIREFLIES_BOT_TOKEN }}
