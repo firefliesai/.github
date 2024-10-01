@@ -60,7 +60,7 @@ jobs:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
           [ -f package.json ] && mv package.json package.json.xx
-          npm install openai @octokit/rest @slack/web-api slackify-markdown @actions/github @actions/core node-fetch
+          npm install openai@4.66.1 @octokit/rest @slack/web-api@7.5.0 slackify-markdown@4.4.0 @actions/github@6.0.0 @actions/core@1.10.1 node-fetch@cjs
 
       - name: Run PR Reviewer
         if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'
@@ -74,7 +74,7 @@ jobs:
         with:
           script: |
             const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
-            
+
             if (!process.env.GTP_TOKEN) {
                throw new Error('GTP_TOKEN is not set');
             }
@@ -87,5 +87,5 @@ jobs:
             if (!process.env.SLACK_CHANNEL_GIT_SECURITY) {
                throw new Error('SLACK_CHANNEL_GIT_SECURITY is not set');
             }
-          
+
             await reviewPR(context);
