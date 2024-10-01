@@ -4,28 +4,28 @@ on:
       develop_branch:
         required: true
         type: string
-        description: "Staging branch"
+        description: 'Staging branch'
 
       main_branch:
         required: true
         type: string
-        description: "Production branch"
+        description: 'Production branch'
 
       version:
         required: false
         type: string
-        description: "Version to release"
+        description: 'Version to release'
 
       merge_back_from_main:
         required: false
         type: string
-        description: "Merge back from production branch instead of release branch to staging branch"
+        description: 'Merge back from production branch instead of release branch to staging branch'
 
       package_json_update_version:
         required: false
         default: false
         type: boolean
-        description: "Set to true to update package.json version to the release version"
+        description: 'Set to true to update package.json version to the release version'
 
 jobs:
   release:
@@ -37,9 +37,9 @@ jobs:
         with:
           develop_branch: ${{ inputs.develop_branch }}
           main_branch: ${{ inputs.main_branch }}
-          dry_run: "true"
+          dry_run: 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FIREFLIES_BOT_TOKEN }}
 
       - id: generate_pr_summary
         name: generate PR summary
@@ -184,7 +184,7 @@ jobs:
               }
             }
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FIREFLIES_BOT_TOKEN }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
 
       - uses: actions/checkout@v4 #check out to the release branch to bump package json version

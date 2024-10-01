@@ -92,5 +92,5 @@ jobs:
               }
             }
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FIREFLIES_BOT_TOKEN }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
