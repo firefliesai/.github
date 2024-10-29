@@ -19,7 +19,7 @@ const initializeOctokit = async () => {
   if (!octokit) {
     const { Octokit } = await import('@octokit/rest');
     octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN || core.getInput('GITHUB_TOKEN'),
+      auth: process.env.GTP_TOKEN,
       request: { fetch },
     });
   }
