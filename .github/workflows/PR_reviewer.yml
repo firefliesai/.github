@@ -60,7 +60,7 @@ jobs:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
         run: |
           [ -f package.json ] && mv package.json package.json.xx
-          npm install openai@4.66.1 @octokit/rest @slack/web-api@7.5.0 slackify-markdown@4.4.0 @actions/github@6.0.0 @actions/core@1.10.1 node-fetch@cjs
+          npm install openai@4.66.1 @octokit/rest @slack/web-api@7.5.0 slackify-markdown@4.4.0 @actions/github@6.0.0 @actions/core@1.10.1 node-fetch@cjs outdent@0.8.0
 
       - name: Run PR Reviewer
         if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'

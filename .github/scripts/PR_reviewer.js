@@ -4,6 +4,7 @@ const { OpenAI } = require('openai');
 const format = require('slackify-markdown');
 const { WebClient } = require('@slack/web-api');
 const fetch = require('node-fetch');
+const outdent = require('outdent');
 
 let octokit;
 
