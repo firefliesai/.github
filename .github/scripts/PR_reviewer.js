@@ -29,7 +29,7 @@ const initializeOctokit = async () => {
 const getPromptPRDescriptionAndFiles = (description, files) => {
   const fileChanges = files.map(file => `- ${String(file.filename)}\n${String(file.patch || file.changes)}`).join('\n\n');
 
-  return outdent`
+  return `
 Please review the following pull request for security vulnerabilities, especially related to authentication, authorization, and sensitive data exposure.
 This includes reviewing both the description and the actual changes in the files modified in the pull request.
 
@@ -145,7 +145,7 @@ const notifySlack = async (data) => {
 };
 
 // Function to get priority prompt
-const getPriorityPrompt = (review) => outdent`
+const getPriorityPrompt = (review) => `
 Please choose a priority between low, medium and high. The priority should be based on your impact analysis/recommendation based on the likelihood for this PR to cause a security concern. 
 Low priority - minor vulnerabilities or concerns that pose little to no immediate risk and can be addressed in future updates. 
 Medium priority - Moderate vulnerabilities or concerns that could potentially impact security or functionality and should be addressed in a reasonable timeframe. 
