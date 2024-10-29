@@ -183,11 +183,6 @@ const reviewPR = async () => {
     const sectionTitle = '## What does this PR do?';
     const noDescriptionBody = `${reviewTitle}\n**No PR description provided**: Please provide a description for the PR.\n`;
 
-    if (!descriptionPR || descriptionPR.includes('xxx')) {
-      core.info('Skipping PR without a proper description.');
-      return;
-    }
-
     // Generate review from OpenAI
     const reviewDescription = (await openai.chat.completions.create({
       messages: [{ role: 'user', content: promptPRDescription }],
