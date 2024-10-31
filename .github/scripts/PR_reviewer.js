@@ -7,6 +7,8 @@ const fetch = require('node-fetch');
 const outdent = require('outdent');
 
 let octokit;
+const MAX_FILES = 20; // only analyze 20 files for now
+const NO_RECOMMENDATION = "NO RECOMMENDATION";
 
 // Initialize OpenAI and Slack clients
 const openai = new OpenAI({
@@ -28,10 +30,10 @@ const initializeOctokit = async () => {
 
 // Function to get review prompt for PR description and file changes
 const getPromptPRDescriptionAndFiles = (description, files) => {
-  const fileChanges = files.map(file => `- ${String(file.filename)}\n${String(file.patch || file.changes)}`).join('\n\n');
+  const fileChanges = files.slice(0, MAX_FILES).map(file => `- ${String(file.filename)}\n${String(file.patch || file.changes)}`).join('\n\n');
 
   return outdent`
-Please review the following pull request for security vulnerabilities, especially related to authentication, authorization, and sensitive data exposure.
+Please review the following pull request for security vulnerabilities, especially related to authentication, authorization, changes on privacy-related implementations, and sensitive data exposure.
 This includes reviewing both the description and the actual changes in the files modified in the pull request.
 
 ### Pull Request Description
@@ -43,7 +45,7 @@ ${fileChanges}
 ### Review Guidelines
 1. **Critical Endpoint Authentication**: Have the file changes made any modifications related to authentication or authorization that could affect critical endpoints or affect users' permissions?
 2. **Sensitive Data Exposure**: Do the changes in any of the files potentially expose sensitive data or make the application more vulnerable to attacks?
-3. **Recommendation**: If authentication, authorization, or sensitive data concerns are present, recommend a few actions to mitigate the risk; otherwise, state "No recommendations".
+3. **Recommendation**: If authentication, authorization, or sensitive data concerns are present, recommend a few actions to mitigate the risk; otherwise, state "${NO_RECOMMENDATION}".
   `;
 };
 
@@ -64,7 +66,8 @@ const fetchPRFiles = async (prNumber) => {
 // Function to notify Slack
 const notifySlack = async (data) => {
   try {
-    const { sectionTitle, reviewTitle, reviewPR, format } = data;
+    const { sectionTitle, review, format } = data;
+    const reviewTitle = '### Automated Review';
 
     const title = context.payload.pull_request.title;
     const link = context.payload.pull_request.html_url;
@@ -90,14 +93,14 @@ const notifySlack = async (data) => {
     const mainPostBody = `Reviewing ${embeddedLink} on ${formattedRepoName}\n*Priority: ${priority} ${priorityEmoji}*`;
 
     // Thread Reply Body
-    let threadBody = bodyPR + reviewPR;
+    let threadBody = bodyPR + review;
     threadBody = threadBody.replace(/\n\s+-/g, '\n-'); // Remove whitespace between line break and bullet
     threadBody = threadBody.replace(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4');
 
     const summary = threadBody.split(sectionTitle)?.[1]?.split('## Type of change')[0]?.trim() || '';
-    const review = threadBody.split(reviewTitle)?.[1]?.trim() || '';
+    
 
-    const formattedThreadReply = format(`${sectionTitle}\n${summary}\n\n${reviewTitle}\n${review}`);
+    const formattedThreadReply = format(`${sectionTitle}\n${summary}\n\n${reviewTitle}\n${threadBody}`);
 
     // Send the Main Post to Slack
     const { ok: postOk, ts, error: postError } = await slack.chat.postMessage({
@@ -162,25 +165,21 @@ const reviewPR = async () => {
   try {
     const filesChanged = await fetchPRFiles(prNumber);
 
-    const promptPRDescription = getPromptPRDescriptionAndFiles(descriptionPR, filesChanged);
-    const reviewTitle = '### Authentication and Authorization';
-    const sectionTitle = '## What does this PR do?';
-    const noDescriptionBody = `${reviewTitle}\n**No PR description provided**: Please provide a description for the PR.\n`;
+    const promptPRDescription = getPromptPRDescriptionAndFiles(descriptionPR, filesChanged);    
+    const sectionTitle = '## What does this PR do?';    
 
     // Generate review from OpenAI
-    const reviewDescription = (await openai.chat.completions.create({
+    const review = (await openai.chat.completions.create({
       messages: [{ role: 'user', content: promptPRDescription }],
       model: 'gpt-4o',
       temperature: 0.6,
       max_tokens: 2048,
     }))?.choices[0].message.content;
 
-    const review = `${reviewTitle}\n${reviewDescription}`;
-    if (!review.includes('The description does not mention any changes related to authentication or authorization')) {      
+    if (!review.includes(NO_RECOMMENDATION)) {
       await notifySlack({
         sectionTitle,
-        reviewTitle,
-        reviewPR: review,
+        review,
         format,
       });
       core.info(`Reviewed PR #${prNumber} successfully.`);
