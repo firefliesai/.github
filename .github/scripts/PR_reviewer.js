@@ -9,7 +9,7 @@ const outdent = require('outdent');
 let octokit;
 const MAX_FILES = 20; // only analyze 20 files for now
 const NO_RECOMMENDATION = "NO RECOMMENDATION";
-const SLACK_THREAD = 'C075B3XH9AR';  // #dev-github-security
+const SLACK_CHANNEL = 'C075B3XH9AR';  // #dev-github-security
 
 // Initialize OpenAI and Slack clients
 const openai = new OpenAI({
@@ -74,12 +74,20 @@ const notifySlack = async (data) => {
     const prTemplateSecondHeader = '## Type of change';
 
     const { title, html_url: link, body: bodyPR } = context.payload.pull_request;
+    const embeddedLink = `<${link}|${title}>`;
+    const reviewHeader = `Reviewing ${embeddedLink}`
+    const isDuplicate = await previousReviewExists(reviewHeader);
+    if (isDuplicate) {
+      console.warn('Review already exists in Slack');
+      return false
+    }
+
     const priority = await getPriority(reviewPR);
     const priorityEmoji = getPriorityEmoji(priority);
 
-    const embeddedLink = `<${link}|${title}>`;
     const formattedRepoName = `\`${context.repo.owner}/${context.repo.repo}\``;
-    const mainPostBody = `Reviewing ${embeddedLink} on ${formattedRepoName}\n*Priority: ${priority} ${priorityEmoji}*`;
+    
+    const mainPostBody = `${reviewHeader} on ${formattedRepoName}\n*Priority: ${priority} ${priorityEmoji}*`;
 
     const threadBody = formatSlackMessageResponse(review);
     const summaryOfPR = formatSlackMessageResponse(bodyPR).split(prTemplateFirstHeader)?.[1]?.split(prTemplateSecondHeader)[0]?.trim() || '';
@@ -87,7 +95,7 @@ const notifySlack = async (data) => {
 
     // Send the Main Post to Slack
     const { ok: postOk, ts, error: postError } = await slack.chat.postMessage({
-      channel: SLACK_THREAD, // #dev-github-security
+      channel: SLACK_CHANNEL,
       text: mainPostBody,
     });
 
@@ -98,7 +106,7 @@ const notifySlack = async (data) => {
 
     // Send the Thread Reply to Slack under the Main Post
     const { ok: threadOk, error: threadError } = await slack.chat.postMessage({
-      channel: SLACK_THREAD, // #dev-github-security
+      channel: SLACK_CHANNEL,
       text: formattedThreadReply,
       thread_ts: ts,
     });
@@ -189,6 +197,25 @@ const formatSlackMessageResponse = (body) => {
     .replace(/\n\s+-/g, '\n-')
     .replace(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4');
 };
+
+const previousReviewExists = async (reviewMessage) => {
+  try {
+    // Fetch the last 20 messages from the Slack channel
+    const result = await slackClient.conversations.history({
+      channel: SLACK_CHANNEL,
+      limit: 20
+    });
+
+    const messages = result.messages;
+
+    // Check if the review message already exists
+    const messageExists = messages.some(message => message.text.includes(reviewMessage));
+    return messageExists;
+  } catch (error) {
+    console.error('Error checking or posting review message:', error);
+    return false;
+  }
+}
 
 
 module.exports = { reviewPR };
