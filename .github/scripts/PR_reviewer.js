@@ -1,7 +1,7 @@
 const { context } = require('@actions/github');
 const core = require('@actions/core');
 const { OpenAI } = require('openai');
-const format = require('slackify-markdown');
+const slackifyMarkdown = require('slackify-markdown');
 const { WebClient } = require('@slack/web-api');
 const fetch = require('node-fetch');
 const outdent = require('outdent');
@@ -9,6 +9,7 @@ const outdent = require('outdent');
 let octokit;
 const MAX_FILES = 20; // only analyze 20 files for now
 const NO_RECOMMENDATION = "NO RECOMMENDATION";
+const SLACK_THREAD = 'C075B3XH9AR';  // #dev-github-security
 
 // Initialize OpenAI and Slack clients
 const openai = new OpenAI({
@@ -65,46 +66,28 @@ const fetchPRFiles = async (prNumber) => {
 
 // Function to notify Slack
 const notifySlack = async (data) => {
+
   try {
-    const { sectionTitle, review, format } = data;
-    const reviewTitle = '### Automated Review';
+    const { review } = data;
+    const reviewTitle = '### AI Review';
+    const prTemplateFirstHeader = '## What does this PR do?';  
+    const prTemplateSecondHeader = '## Type of change';
 
-    const title = context.payload.pull_request.title;
-    const link = context.payload.pull_request.html_url;
-    const bodyPR = context.payload.pull_request.body;
-
-    // Determine priority dynamically using OpenAI
-    const priorityResponse = await openai.chat.completions.create({
-      messages: [{ role: 'user', content: getPriorityPrompt(reviewPR) }],
-      model: 'gpt-4o-mini',
-      temperature: 0.0,
-      max_tokens: 20,
-    });
-    const priority = priorityResponse?.choices[0].message.content.trim();
+    const { title, html_url: link, body: bodyPR } = context.payload.pull_request;
+    const priority = await getPriority(reviewPR);
     const priorityEmoji = getPriorityEmoji(priority);
 
-    // Create embedded hyperlink for Slack message
     const embeddedLink = `<${link}|${title}>`;
-
-    // Format repository name in code style
     const formattedRepoName = `\`${context.repo.owner}/${context.repo.repo}\``;
-
-    // Main Post Body with Priority and Emoji
     const mainPostBody = `Reviewing ${embeddedLink} on ${formattedRepoName}\n*Priority: ${priority} ${priorityEmoji}*`;
 
-    // Thread Reply Body
-    let threadBody = bodyPR + review;
-    threadBody = threadBody.replace(/\n\s+-/g, '\n-'); // Remove whitespace between line break and bullet
-    threadBody = threadBody.replace(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4');
-
-    const summary = threadBody.split(sectionTitle)?.[1]?.split('## Type of change')[0]?.trim() || '';
-    
-
-    const formattedThreadReply = format(`${sectionTitle}\n${summary}\n\n${reviewTitle}\n${threadBody}`);
+    const threadBody = formatSlackMessageResponse(review);
+    const summaryOfPR = formatSlackMessageResponse(bodyPR).split(prTemplateFirstHeader)?.[1]?.split(prTemplateSecondHeader)[0]?.trim() || '';
+    const formattedThreadReply = slackifyMarkdown(`${prTemplateFirstHeader}\n${summaryOfPR}\n-------\n${reviewTitle}\n${threadBody}`);
 
     // Send the Main Post to Slack
     const { ok: postOk, ts, error: postError } = await slack.chat.postMessage({
-      channel: 'C075B3XH9AR', // #dev-github-security
+      channel: SLACK_THREAD, // #dev-github-security
       text: mainPostBody,
     });
 
@@ -115,7 +98,7 @@ const notifySlack = async (data) => {
 
     // Send the Thread Reply to Slack under the Main Post
     const { ok: threadOk, error: threadError } = await slack.chat.postMessage({
-      channel: 'C075B3XH9AR', // #dev-github-security
+      channel: SLACK_THREAD, // #dev-github-security
       text: formattedThreadReply,
       thread_ts: ts,
     });
@@ -165,8 +148,7 @@ const reviewPR = async () => {
   try {
     const filesChanged = await fetchPRFiles(prNumber);
 
-    const promptPRDescription = getPromptPRDescriptionAndFiles(descriptionPR, filesChanged);    
-    const sectionTitle = '## What does this PR do?';    
+    const promptPRDescription = getPromptPRDescriptionAndFiles(descriptionPR, filesChanged);          
 
     // Generate review from OpenAI
     const review = (await openai.chat.completions.create({
@@ -178,9 +160,7 @@ const reviewPR = async () => {
 
     if (!review.includes(NO_RECOMMENDATION)) {
       await notifySlack({
-        sectionTitle,
-        review,
-        format,
+        review        
       });
       core.info(`Reviewed PR #${prNumber} successfully.`);
     } else {
@@ -190,5 +170,25 @@ const reviewPR = async () => {
     console.error(`Error reviewing PR: ${e.message}`);
   }
 };
+
+// Helper function to get priority
+const getPriority = async (reviewPR) => {
+  const response = await openai.chat.completions.create({
+    messages: [{ role: 'user', content: getPriorityPrompt(reviewPR) }],
+    model: 'gpt-4o-mini',
+    temperature: 0.0,
+    max_tokens: 20,
+  });
+  return response?.choices[0].message.content.trim();
+};
+
+// Helper function to format thread body
+const formatSlackMessageResponse = (body) => {
+  // Remove whitespace between line break and bullet
+  return body
+    .replace(/\n\s+-/g, '\n-')
+    .replace(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4');
+};
+
 
 module.exports = { reviewPR };
