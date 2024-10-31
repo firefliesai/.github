@@ -47,22 +47,6 @@ ${fileChanges}
   `;
 };
 
-// Function to comment on a PR
-const commentPR = async (issueId, comment) => {
-  try {
-    const commentRes = await octokit.rest.issues.createComment({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      issue_number: issueId,
-      body: comment,
-    });
-    return !!commentRes;
-  } catch (e) {
-    console.error(`Error commenting on PR: ${e.message}`);
-    return false;
-  }
-};
-
 // Function to fetch and then review PR file changes
 const fetchPRFiles = async (prNumber) => {
   const files = await octokit.rest.pulls.listFiles({
@@ -192,8 +176,7 @@ const reviewPR = async () => {
     }))?.choices[0].message.content;
 
     const review = `${reviewTitle}\n${reviewDescription}`;
-    if (!review.includes('The description does not mention any changes related to authentication or authorization')) {
-      await commentPR(prNumber, review);
+    if (!review.includes('The description does not mention any changes related to authentication or authorization')) {      
       await notifySlack({
         sectionTitle,
         reviewTitle,
