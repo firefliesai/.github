@@ -159,9 +159,9 @@ const getPriorityEmoji = (priority) => {
     case 'high':
       return ':red_circle:';  // Red for high priority
     case 'medium':
-      return ':yellow_circle:';  // Yellow for medium priority
+      return ':large_yellow_circle:';  // Yellow for medium priority
     case 'low':
-      return ':green_circle:';  // Green for low priority
+      return ':large_green_circle:';  // Green for low priority
     default:
       return '';  // No emoji if priority is not recognized
   }
