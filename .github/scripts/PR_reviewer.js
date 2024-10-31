@@ -82,7 +82,7 @@ const notifySlack = async (data) => {
       return false
     }
 
-    const priority = await getPriority(reviewPR);
+    const priority = await getPriority(review);
     const priorityEmoji = getPriorityEmoji(priority);
 
     const formattedRepoName = `\`${context.repo.owner}/${context.repo.repo}\``;
@@ -166,7 +166,7 @@ const reviewPR = async () => {
       max_tokens: 2048,
     }))?.choices[0].message.content;
 
-    if (!review.includes(NO_RECOMMENDATION)) {
+    if (!review?.includes(NO_RECOMMENDATION)) {
       await notifySlack({
         review        
       });
@@ -180,14 +180,20 @@ const reviewPR = async () => {
 };
 
 // Helper function to get priority
-const getPriority = async (reviewPR) => {
-  const response = await openai.chat.completions.create({
-    messages: [{ role: 'user', content: getPriorityPrompt(reviewPR) }],
-    model: 'gpt-4o-mini',
-    temperature: 0.0,
-    max_tokens: 20,
-  });
-  return response?.choices[0].message.content.trim();
+const getPriority = async (review) => {
+  try {
+    const response = await openai.chat.completions.create({
+      messages: [{ role: 'user', content: getPriorityPrompt(review) }],
+      model: 'gpt-4o-mini',
+      temperature: 0.0,
+      max_tokens: 20,
+    });
+    return response?.choices[0].message.content.trim();
+  } catch (e) {
+    console.error('Error getting priority from OpenAI:', e);
+    return 'low'; // Default to low priority if error occurs
+  }
+  
 };
 
 // Helper function to format thread body
@@ -201,7 +207,7 @@ const formatSlackMessageResponse = (body) => {
 const previousReviewExists = async (reviewMessage) => {
   try {
     // Fetch the last 20 messages from the Slack channel
-    const result = await slackClient.conversations.history({
+    const result = await slack.conversations.history({
       channel: SLACK_CHANNEL,
       limit: 20
     });
