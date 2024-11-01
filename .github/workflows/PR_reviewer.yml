@@ -14,6 +14,7 @@ on:
 
 jobs:
   pr_reviewer_job:
+    if: github.event.pull_request.title != 'Deploy to Production'
     runs-on: ubuntu-latest
     name: A job to review pull request descriptions
     steps:
