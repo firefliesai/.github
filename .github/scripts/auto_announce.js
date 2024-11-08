@@ -40,7 +40,6 @@ const computeReleaseBody = async (params) => {
 
 const slackIDs = {
 	'dmkorb': 'U0256NC37GT',
-	'rogerpadilla': 'U02FR157SG1',
 	'grimmer0125': 'U03BZH4CYBD',
 	'Riddhish97': 'U04H6BQ6V0T',
 	'MrMuhammadAbdullah1704': 'U01G1J5HYG5',
@@ -57,16 +56,14 @@ const slackIDs = {
 	'Lutif': 'U01N11L5BD0',
 	'Nilomiranda': 'U02GNJGBPJ7',
 	'thadeuk': 'U02G82H7QR2',
-	'carloscdante': 'D04HD1C8PMW',
+	'carloscdante': 'U04FY3MGBV4',
 	'wilforlan': 'UC0UWLSQ2',
 	'jhho89': 'U01HB1J09PF',
 	'longyarnz': 'UH8DQ3PRA',
 	'xage93': 'U043X1K6810',
-	'kashyap-sojitra': 'U05RBAXUJUX',
 	'htkimura': 'U061P10ADNV',
 	'ghimire007': 'U065MEQ96AU',
 	'fisfat': 'UKLEEP4F6',
-	'gabrielcsf': 'U06180NQGPQ',
 	'Serdar-FF': 'U067AUL8HG8',
 	'atomicman57': 'U8EGXN80Z',
 	'cchitsiang': 'U0544MQ3ZNK',
@@ -83,7 +80,6 @@ const slackIDs = {
 	'shivamluthra': 'U043X0VCASE',
 	'samuelfruhauf': 'U02M3F53PU7',
 	'rafakato': 'U02PMSZDNE6',
-	'sahilchauhan36': 'U068VP8DLEL',
 	'mHamza301': 'U022K5F8ZB3',
 	'm3rryqold': 'U0560E5H41F',
 	'mustay': 'U05M9EJMY72',
@@ -94,11 +90,13 @@ const slackIDs = {
 	'robert-sarosi': 'U06MR0J3MC0',
 	'codinger41': 'U06S3KV9G5P',
 	'FoysalOsmany': 'U01UDGB0RR8',
-	'anveshr1': 'U01PC2FDE65',
 	'noghartt': 'U074XBKUX1R',
 	'luckpng': 'U0785C4MZ1A',
 	'Nickrosendo': 'U076TTEDQJX',
-	'asozcan': 'U07FEPGH677'
+	'asozcan': 'U07FEPGH677',
+	'airas-fireflies': 'U07K5NA0J1K',
+	'Eckzzo': 'U07SHTKLKUJ',
+	'caiocampoos': 'U07S6AXF9T9'
 }
 
 module.exports = {
