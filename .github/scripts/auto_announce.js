@@ -153,18 +153,10 @@ module.exports = {
 		}
 
 		console.info('Before Formatting: ', body);
-		const summaries = body.split(`## Experimental Release Summary`);
-		for (let i=0; i< summaries.length; i++) {
-			summaries[i] = summaries[i].replaceAll(/<![^<>]+>/g, ''); // Remove <!-- ... --> strings
-			summaries[i] = summaries[i].replaceAll(/(\w|`)(\n|\r)+(\w|`)/g, '$1 $3'); // Remove unintentional line breaks between words and tilde
-			if (i==0) {
-				/** remove space can not apply on ## Experimental Release Summary since it would break nested list */
-				summaries[i] = summaries[i].replaceAll(/\n\s+-/g, '\n-'); // Remove white space between line break and bullet
-			}
-			summaries[i] = summaries[i].replaceAll(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4'); // Convert PR title to hyperlink
-		}
-		body = summaries.join(`## Experimental Release Summary`);
-
+		body = body.replaceAll(/<![^<>]+>/g, ''); // Remove <!-- ... --> strings
+		body = body.replaceAll(/(\w|`)(\n|\r)+(\w|`)/g, '$1 $3'); // Remove unintentional line breaks between words and tilde
+		body = body.replaceAll(/\n\s+-/g, '\n-'); // Remove white space between line break and bullet
+		body = body.replaceAll(/\* (.+) (by .+) in (https:\/\/.+)(\n)*/g, '* [$1]($3) $2$4'); // Convert PR title to hyperlink
 		const [summary, changes] = body.split(`## What's Changed`); // Split summaries from changes
 
 		const { owner, repo } = context.repo;

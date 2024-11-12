@@ -146,22 +146,6 @@ ${message}`;
 			return draft;
 		}, body);
 
-
-		/** Start: experiment new Release Summary */
-		body += `
-
-## Experimental Release Summary`;
-		body = Object.keys(allPullRequests).reduce((draft, number) => {
-			const pullRequest = allPullRequests[number];
-			let message = pullRequest.body.split('What does this PR do?')[1]?.split('#')[0]?.trim(); // Extract the PR summaries from the description body
-			const summaryItem = processString(message, pullRequest.title)
-			draft += `
-			${summaryItem}`;
-			return draft;
-		}, body);
-		console.debug("body after adding Experimental Release Summary", body)
-		/** End: experiment new Release Summary */
-
 		const releaseActions = getReleaseActions({ isFeature, isBugFix, isBreaking });
 
 		if (releaseActions.length) {
