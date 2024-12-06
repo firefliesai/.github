@@ -10,6 +10,7 @@ let octokit;
 const MAX_FILES = 20; // only analyze 20 files for now
 const NO_RECOMMENDATION = "NO RECOMMENDATION";
 const SLACK_CHANNEL = "C075B3XH9AR"; // #dev-github-security
+const SLACK_TEAM_SECURITY_OFFICERS = "S074TSWP9R9"; // security officers team
 
 // Initialize OpenAI and Slack clients
 const openai = new OpenAI({
@@ -156,7 +157,7 @@ Please share just the priority [low, medium, high] and no additional context.\n\
 const getPriorityEmoji = (priority) => {
   switch (priority.toLowerCase()) {
     case "high":
-      return ":red_circle:"; // Red for high priority
+      return `:red_circle: <@${SLACK_TEAM_SECURITY_OFFICERS}> Please Review`; // Red for high priority
     case "medium":
       return ":large_yellow_circle:"; // Yellow for medium priority
     case "low":
