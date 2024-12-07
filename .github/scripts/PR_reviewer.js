@@ -10,7 +10,7 @@ let octokit;
 const MAX_FILES = 20; // only analyze 20 files for now
 const NO_RECOMMENDATION = "NO RECOMMENDATION";
 const SLACK_CHANNEL = "C075B3XH9AR"; // #dev-github-security
-const SLACK_TEAM_SECURITY_OFFICERS = "<!subteam^S074TSWP9R9|security-officers>"; // security officers team
+const SLACK_TEAM_SECURITY_OFFICERS = "<!subteam^S074TSWP9R9|security-officer>"; // security officers team
 
 // Initialize OpenAI and Slack clients
 const openai = new OpenAI({
