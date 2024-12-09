@@ -77,7 +77,6 @@ const slackIDs = {
 	'zekeri-riya': 'U01374NRKGU',
 	'zypher606': 'U021VD0J2UE',
 	'sleemkeen': 'U01QSFC4QUE',
-	'shivamluthra': 'U043X0VCASE',
 	'samuelfruhauf': 'U02M3F53PU7',
 	'rafakato': 'U02PMSZDNE6',
 	'mHamza301': 'U022K5F8ZB3',
@@ -96,7 +95,8 @@ const slackIDs = {
 	'asozcan': 'U07FEPGH677',
 	'airas-fireflies': 'U07K5NA0J1K',
 	'Eckzzo': 'U07SHTKLKUJ',
-	'caiocampoos': 'U07S6AXF9T9'
+	'caiocampoos': 'U07S6AXF9T9',
+	'guilherme-vp': 'U0812PGPGE6'
 }
 
 module.exports = {

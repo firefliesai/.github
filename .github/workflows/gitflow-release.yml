@@ -139,12 +139,9 @@ jobs:
                 "sumitkolhe": "U04PZD94TAR",
                 "carloscdante": "U04FY3MGBV4",
                 "wilforlan": "UC0UWLSQ2",
-                "anooppoommen": "U038VBD2XCP",
-                "hamidladan": "U043NHY5HNF",
                 "zypher606": "U021VD0J2UE",
                 "samuelfruhauf": "U02M3F53PU7",
                 "MBilal07": "U022EQJQBMF",
-                "shivamluthra": "U043X0VCASE",
                 "haziqAhmed92": "U02HAU99A1G",
                 "htkimura": "U061P10ADNV",
                 "xage93": "U043X1K6810",
@@ -161,7 +158,6 @@ jobs:
                 "zekeri-riya": "U01374NRKGU",
                 "sleemkeen": "U01QSFC4QUE",
                 "rafakato": "U02PMSZDNE6",
-                "sahilchauhan36": "U068VP8DLEL",
                 "mHamza301": "U022K5F8ZB3",
                 "m3rryqold": "U0560E5H41F",
                 "mustay": "U05M9EJMY72",
@@ -176,7 +172,8 @@ jobs:
                 "asozcan": "U07FEPGH677",
                 "airas-fireflies": "U07K5NA0J1K",
                 "Eckzzo": "U07SHTKLKUJ",
-                "caiocampoos": "U07S6AXF9T9"
+                "caiocampoos": "U07S6AXF9T9",
+                "guilherme-vp": "U0812PGPGE6"
               }
             }
         env:
