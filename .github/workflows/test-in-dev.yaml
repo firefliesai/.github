@@ -1,0 +1,102 @@
+name: Test in Dev
+
+on:
+  workflow_dispatch:
+
+env:
+  GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          submodules: recursive
+
+      - name: Extrapolate Environment Variables
+        shell: bash
+        run: |
+          echo "Calculating BRANCH_NAME and IMAGE_NAME"
+          IMG=$(echo ghcr.io/${{ github.repository }}/${{ github.event.repository.name }})
+          echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMG" >> $GITHUB_ENV
+          echo "IMAGE_NAME_WITH_SHA=$IMG:${GITHUB_SHA::8}" >> $GITHUB_ENV
+          echo '::echo::on'
+          echo "::set-output name=IMAGE_NAME_WITH_SHA::$IMG:${GITHUB_SHA::8}"
+
+      - name: Cache buildkit build
+        uses: actions/cache@v2
+        with:
+          path: /tmp/cache
+          key: ${{ env.IMAGE_NAME_WITH_SHA }}
+          restore-keys: |
+            ${{ env.IMAGE_NAME  }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Docker Buildkit
+        uses: docker/setup-buildx-action@v1
+        id: buildx
+        with:
+          install: true
+
+      - name: Build the Docker image
+        run: |
+          docker build . \
+          --file Dockerfile \
+          --tag $(echo $IMAGE_NAME_WITH_SHA) \
+          --tag $(echo $IMAGE_NAME:latest) \
+          --cache-from type=local,src=/tmp/cache \
+          --cache-to type=local,dest=/tmp/cache-new \
+          --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} \
+          --build-arg GTP_TOKEN=${{ secrets.CROSS_REPO_TOKEN }} \
+          --load
+
+      - name: Setup Container Structure Test
+        shell: bash
+        run: |
+          echo "Setup container structure test binary"
+          curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
+          chmod +x container-structure-test-linux-amd64
+          sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+
+      - name: Generate Basic structure test
+        run: |
+          echo "Generate basic container structure test"
+          mkdir -p tests/structure
+          cat <<EOF > tests/structure/basic.yaml
+          schemaVersion: 2.0.0
+          commandTests:
+            - name: Node command available
+              command: which
+              args:
+                - node
+              expectedOutput:
+                - /usr/local/bin/node
+          EOF
+
+      - name: Runs structure test
+        shell: bash
+        run: |
+          echo "Run test against ${IMAGE_NAME_WITH_SHA}"
+          find ./tests/structure -name "*.yaml" -print0 | xargs -0 -I {} container-structure-test test --image ${IMAGE_NAME_WITH_SHA} --config {}
+
+      - name: Push container image
+        run: |
+          docker push $IMAGE_NAME_WITH_SHA
+
+      - name: Dispatch Event to k8s-staging
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          repository: firefliesai/k8s-staging
+          event-type: deployService
+          client-payload: '{"repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME_WITH_SHA }}", "branch": "staging" }'
