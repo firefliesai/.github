@@ -116,7 +116,6 @@ const notifySlack = async (data) => {
       ok: postOk,
       ts,
       error: postError,
-      channel,
     } = await slack.chat.postMessage({
       channel: SLACK_CHANNEL,
       text: mainPostBody,
