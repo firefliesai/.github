@@ -1,0 +1,21 @@
+name: Token Checker
+
+on:
+  pull_request:
+
+jobs:
+
+  check-token:
+    strategy:
+      fail-fast: false
+      matrix:
+        token:
+          - ACCESS_TOKEN
+          - CROSS_REPO_TOKEN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify ${{ matrix.token }} user
+        run: |
+          gh pr comment ${{ github.event.number }} -b "Hello from token ${{ matrix.token }} :wink:"
+        env:
+          GITHUB_TOKEN: ${{ secrets[matrix.token] }}
