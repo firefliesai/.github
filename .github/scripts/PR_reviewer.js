@@ -293,18 +293,22 @@ const createSecurityReview = async (review, slackThreadUrl) => {
     Our automated security review has identified critical concerns that should be addressed in this PR.
 
     ### Security Review Findings
+    <details>
+    <summary>Security Review Details</summary>
+
     ${review}
+    </details>
 
-    ### Recommended Actions
-    1. Please review the security concerns identified above
-    2. Consider making changes to address these issues
-    3. Request a security officer review if needed
+    ### Required Actions
 
-    ### Further Discussion
-    A thread has been created in Slack for further discussion with the security team.
-    👉 [View Slack Thread](${slackThreadUrl})
+    1. Review the security findings detailed above ⚠️
+    2. Implement necessary changes to address the identified security concerns
+    3. Join the [Security Review Thread](${slackThreadUrl}) to:
+      - Provide context about these security findings
+      - Discuss your planned fixes
+      - Get additional guidance if needed
 
-    This is an automated security review comment. Please ensure all security concerns are properly addressed.
+⚠️   **Important:** This PR should not be merged until all security concerns have been properly addressed and verified. Your team's security is our top priority.
     `;
 
     // Create PR comment instead of review
