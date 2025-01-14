@@ -123,7 +123,7 @@ const notifySlack = async (data) => {
 
     if (!postOk) {
       console.error(`Error posting main review to Slack: ${postError}`);
-      return false;
+      return { success: false };
     }
 
     // Send the Thread Reply to Slack under the Main Post
@@ -135,13 +135,22 @@ const notifySlack = async (data) => {
 
     if (!threadOk) {
       console.error(`Error posting thread reply to Slack: ${threadError}`);
-      return false;
+      return { success: false };
     }
 
-    return true;
+    // Get the permalink to the thread
+    const { permalink } = await slack.chat.getPermalink({
+      channel: SLACK_CHANNEL,
+      message_ts: ts,
+    });
+
+    return {
+      success: true,
+      threadUrl: permalink,
+    };
   } catch (e) {
     console.error(`Error notifying Slack: ${e.message}`);
-    return false;
+    return { success: false };
   }
 };
 
@@ -187,7 +196,6 @@ const reviewPR = async () => {
 
   try {
     const filesChanged = await fetchPRFiles(prNumber);
-
     const promptPRDescription = getPromptPRDescriptionAndFiles(
       descriptionPR,
       filesChanged,
@@ -204,9 +212,19 @@ const reviewPR = async () => {
     )?.choices[0].message.content;
 
     if (!review?.includes(NO_RECOMMENDATION)) {
-      await notifySlack({
+      // Get priority level
+      const priority = await getPriority(review);
+
+      // Send to Slack and get thread URL
+      const { success, threadUrl } = await notifySlack({
         review,
       });
+
+      // If priority is high, add a comment to the PR with Slack thread link
+      if (priority.toLowerCase() === "high" && success && threadUrl) {
+        await createSecurityReview(review, threadUrl);
+      }
+
       core.info(`Reviewed PR #${prNumber} successfully.`);
     } else {
       core.info(
@@ -259,6 +277,56 @@ const previousReviewExists = async (reviewMessage) => {
     return messageExists;
   } catch (error) {
     console.error("Error checking or posting review message:", error);
+    return false;
+  }
+};
+
+const createSecurityReview = async (review, slackThreadUrl) => {
+  try {
+    const pullRequest = context.payload.pull_request;
+    const prNumber = pullRequest.number;
+
+    // Format the review comment
+    const reviewComment = outdent`
+    🚨 **High Priority Security Concerns Detected**
+
+    Our automated security review has identified critical concerns that should be addressed in this PR.
+
+    ### Security Review Findings
+    ${review}
+
+    ### Recommended Actions
+    1. Please review the security concerns identified above
+    2. Consider making changes to address these issues
+    3. Request a security officer review if needed
+
+    ### Further Discussion
+    A thread has been created in Slack for further discussion with the security team.
+    👉 [View Slack Thread](${slackThreadUrl})
+
+    This is an automated security review comment. Please ensure all security concerns are properly addressed.
+    `;
+
+    // Create PR comment instead of review
+    await octokit.rest.issues.createComment({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: prNumber,
+      body: reviewComment,
+    });
+
+    // Add a label to the PR
+    await octokit.rest.issues.addLabels({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: prNumber,
+      labels: ["security-review-required"],
+    });
+
+    core.info(`Created security review comment for PR #${prNumber}`);
+    return true;
+  } catch (e) {
+    console.error(`Error creating security review comment: ${e.message}`);
     return false;
   }
 };
