@@ -308,7 +308,7 @@ const createSecurityReview = async (review, slackThreadUrl) => {
       - Discuss your planned fixes
       - Get additional guidance if needed
 
-⚠️   **Important:** This PR should not be merged until all security concerns have been properly addressed and verified. Your team's security is our top priority.
+⚠️   **Important:** This PR should not be merged until all security concerns have been properly addressed and verified.
     `;
 
     // Create PR comment instead of review
