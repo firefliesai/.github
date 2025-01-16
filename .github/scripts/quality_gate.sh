@@ -33,7 +33,7 @@ if [ $alertCount -gt 0 ]; then
     fi
 
 
-    if [ "$non_fixed_count" -gt 5 ]; then
+    if [ "$non_fixed_count" -gt 5 ] && [ "$non_fixed_count" -le 10 ]; then
         echo "\033[33mWARNING: There are more than 5 non-fixed alerts in the repository. Please verify the alerts on the below links.\033[0m"
         echo "Links to all alerts:"
         jq -r '.[] | .html_url' "$getFile"
