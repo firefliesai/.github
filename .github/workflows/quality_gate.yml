@@ -1,0 +1,26 @@
+name: Check Security Alerts
+
+on:
+  workflow_call:
+    outputs:
+      check-alerts:
+        description: 'Check for security alerts in the repository'
+        value: ${{ steps.check-alerts.outputs.check-alerts }}      
+jobs:
+  check-alerts:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Set up environment variables
+        run: |
+          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "REPO=${{ github.repository }}" >> $GITHUB_ENV
+        
+      - name: Run alert check script
+        id: check-alerts
+        run: |
+          chmod +x ./scripts/quality_gate.sh
+          ./scripts/quality_gate.sh
