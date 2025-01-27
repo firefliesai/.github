@@ -1,5 +1,4 @@
-name: Pull Request Reviewer
-
+name: Pull Request Reviewer Test
 on:
   workflow_call:
     secrets:
@@ -11,61 +10,34 @@ on:
         required: true
       SLACK_CHANNEL_GIT_SECURITY:
         required: true
-
 jobs:
   pr_reviewer_job:
     runs-on: ubuntu-22.04
-    name: A job to review pull request descriptions
+    name: Security Review for Pull Requests
     steps:
-      - name: Checkout caller-repo
+      - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Checkout firefliesai/.github
+      
+      - name: Checkout PR Review Project
         uses: actions/checkout@v4
         with:
           repository: firefliesai/.github
-          path: firefliesai
+          path: pr-reviewer
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            .github/scripts/PR_reviewer.js
-
-      - name: Save current PR description to file
-        id: save_pr_description
-        continue-on-error: true
-        run: printf "%q" "$(echo ${{ github.event.pull_request.body }})" > ${{ github.workspace }}/firefliesai/.github/PR_description.txt
-
-      - name: Search PR description in cache
-        id: cache
-        if: steps.save_pr_description.outcome == 'success'
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/firefliesai/.github/PR_description.txt
-          key: cache-pr-${{ github.event.pull_request.number }}-${{ hashFiles('./firefliesai/.github/PR_description.txt') }}
-
-      - name: Cache hit
-        if: steps.save_pr_description.outcome == 'success' && steps.cache.outputs.cache-hit == 'true'
-        run: echo "Cache hit for PR description, skipping PR Reviewer"
+            .github/scripts/pr-reviewer/
 
       - name: Setup Node
-        if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: https://npm.pkg.github.com
-          scope: '@firefliesai'
 
-      - name: Install packages
-        if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'
-        env:
-          GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
-        run: |
-          [ -f package.json ] && mv package.json package.json.xx
-          npm install openai@4.66.1 @octokit/rest @slack/web-api@7.5.0 slackify-markdown@4.4.0 @actions/github@6.0.0 @actions/core@1.10.1 node-fetch@cjs outdent@0.8.0
+      - name: Install Dependencies
+        working-directory: pr-reviewer/.github/scripts/pr-reviewer
+        run: npm install
 
       - name: Run PR Reviewer
-        if: steps.save_pr_description.outcome == 'failure' || steps.cache.outputs.cache-hit != 'true'
         uses: actions/github-script@v6
-        id: reviewer
         env:
           GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -73,19 +45,13 @@ jobs:
           SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
         with:
           script: |
-            const { reviewPR } = require('${{ github.workspace }}/firefliesai/.github/scripts/PR_reviewer.js');
-
-            if (!process.env.GTP_TOKEN) {
-               throw new Error('GTP_TOKEN is not set');
+            const { reviewPR } = require('./pr-reviewer/.github/scripts/pr-reviewer/index.js');
+            
+            const requiredEnvVars = ['GTP_TOKEN', 'OPENAI_API_KEY', 'SLACK_TOKEN', 'SLACK_CHANNEL_GIT_SECURITY'];
+            for (const env of requiredEnvVars) {
+              if (!process.env[env]) {
+                throw new Error(`${env} is not set`);
+              }
             }
-            if (!process.env.OPENAI_API_KEY) {
-               throw new Error('OPENAI_API_KEY is not set');
-            }
-            if (!process.env.SLACK_TOKEN) {
-               throw new Error('SLACK_TOKEN is not set');
-            }
-            if (!process.env.SLACK_CHANNEL_GIT_SECURITY) {
-               throw new Error('SLACK_CHANNEL_GIT_SECURITY is not set');
-            }
-
+            
             await reviewPR(context);
