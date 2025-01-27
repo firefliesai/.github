@@ -1,3 +1,4 @@
+const { context } = require("@actions/github");
 const { OpenAI } = require("openai");
 const { WebClient } = require("@slack/web-api");
 const core = require("@actions/core");
@@ -14,10 +15,14 @@ module.exports = {
     if (!this.octokit) {
       const { Octokit } = await import("@octokit/rest");
       this.octokit = new Octokit({
-        auth: process.env.GITHUB_TOKEN,
+        auth: process.env.GTP_TOKEN || core.getInput("GTP_TOKEN"),
         request: { fetch },
       });
     }
     return this.octokit;
+  },
+
+  getGitHubContext() {
+    return context;
   },
 };

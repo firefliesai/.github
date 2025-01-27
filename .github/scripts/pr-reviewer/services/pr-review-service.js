@@ -12,7 +12,8 @@ class PRReviewService {
   async reviewPR(context, options = {}) {
     this.context = context;
     const {
-      prNumber = context?.payload?.pull_request?.number,
+      prNumber = context?.payload?.pull_request?.number ||
+        clients.getGitHubContext().payload?.pull_request?.number,
       mainPrompt = require("../prompts/review"),
       priorityPrompt = require("../prompts/priority"),
       model = config.OPENAI.REVIEW.defaultModel,
@@ -26,9 +27,7 @@ class PRReviewService {
         return { status: "skipped", reason: "Production deploy or release PR" };
       }
 
-      /// check for duplicate reviews in slack
       const reviewHeader = `Reviewing <${pullRequest.html_url}|${pullRequest.title}>`;
-
       const isDuplicate = await slackService.checkDuplicateReview(reviewHeader);
 
       if (isDuplicate) {
@@ -76,8 +75,8 @@ class PRReviewService {
   async getPullRequest(prNumber) {
     const octokit = await clients.initOctokit();
     const { data } = await octokit.rest.pulls.get({
-      owner: this.context.repo.owner,
-      repo: this.context.repo.repo,
+      owner: this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+      repo: this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
       pull_number: prNumber,
     });
     return data;
@@ -86,8 +85,8 @@ class PRReviewService {
   async getChangedFiles(prNumber) {
     const octokit = await clients.initOctokit();
     const { data } = await octokit.rest.pulls.listFiles({
-      owner: this.context.repo.owner,
-      repo: this.context.repo.repo,
+      owner: this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+      repo: this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
       pull_number: prNumber,
     });
     return data.map((file) => ({
@@ -100,8 +99,8 @@ class PRReviewService {
   async getPRComments(prNumber) {
     const octokit = await clients.initOctokit();
     const { data: comments } = await octokit.rest.issues.listComments({
-      owner: this.context.repo.owner,
-      repo: this.context.repo.repo,
+      owner: this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+      repo: this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
       issue_number: prNumber,
     });
 
@@ -132,17 +131,17 @@ class PRReviewService {
       .join("\n\n");
 
     return `
-      [PR Context]
-      ${description || "No description provided."}
+     [PR Context]
+     ${description || "No description provided."}
 
-      [CHANGES]
-      ${fileChanges}
-      
-      [COMMENTS]
-      ${comments}
+     [CHANGES]
+     ${fileChanges}
      
-      ${prompt}
-    `;
+     [COMMENTS]
+     ${comments}
+    
+     ${prompt}
+   `;
   }
 }
 
