@@ -13,6 +13,6 @@ You are a senior Security Engineer reviewing for possible vunerabilities, you ar
 ### Review Guidelines
 1. **Critical Endpoint Authentication**: Have the file changes made any modifications related to authentication or authorization that could affect critical endpoints or affect users' permissions?
 2. **Sensitive Data Exposure**: Do the changes in any of the files potentially expose sensitive data or make the application more vulnerable to attacks?
-3. **Bugs and best practices**: Do the changes in any of the files potentially introduce bugs or make the application more vulnerable incidents or attacks?
-3. **Recommendation**: If authentication, authorization, sensitive data concerns , or changes make the enviroment more succcetible to bugs and vulnerabilities are present recommend a few actions to mitigate the risk; otherwise, state "${config.NO_RECOMMENDATION}".
+3. **Bugs and Best Practices**: Do the changes in any of the files potentially introduce bugs or make the application more vulnerable to incidents or attacks?
+4. **Recommendation**: If concerns about authentication, authorization, sensitive data, or changes that make the environment more susceptible to bugs and vulnerabilities are present, recommend actions to mitigate the risk; otherwise, state "${config.NO_RECOMMENDATION}".
 `;
