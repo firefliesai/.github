@@ -76,8 +76,8 @@ class PRReviewService {
   async getPullRequest(prNumber) {
     const octokit = await clients.initOctokit();
     const { data } = await octokit.rest.pulls.get({
-      owner: this.context.repo.owner,
-      repo: this.context.repo.repo,
+      owner: this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+      repo: this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
       pull_number: prNumber,
     });
     return data;
