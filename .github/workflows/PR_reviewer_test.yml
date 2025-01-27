@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: firefliesai/.github
-          path: .github
+          path: pr-reviewer
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/scripts/pr-reviewer/
@@ -33,7 +33,7 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
-        working-directory: .github/scripts/pr-reviewer
+        working-directory: pr-reviewer/.github/scripts/pr-reviewer
         run: npm install
 
       - name: Run PR Reviewer
@@ -45,7 +45,7 @@ jobs:
           SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
         with:
           script: |
-            const { reviewPR } = require('./.github/scripts/pr-reviewer/index.js');
+            const { reviewPR } = require('./pr-reviewer/.github/scripts/pr-reviewer/index.js');
             
             const requiredEnvVars = ['GTP_TOKEN', 'OPENAI_API_KEY', 'SLACK_TOKEN', 'SLACK_CHANNEL_GIT_SECURITY'];
             for (const env of requiredEnvVars) {
