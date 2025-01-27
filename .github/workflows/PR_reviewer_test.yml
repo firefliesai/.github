@@ -46,7 +46,7 @@ jobs:
           SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
         with:
           script: |
-            const { reviewPR } = require('./.github/scripts/pr-review/index.js');
+            const { reviewPR } = require('./.github/scripts/pr-reviewer/index.js');
             
             // Validate environment
             const requiredEnvVars = ['GITHUB_TOKEN', 'OPENAI_API_KEY', 'SLACK_TOKEN', 'SLACK_CHANNEL_GIT_SECURITY'];
