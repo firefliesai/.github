@@ -25,12 +25,34 @@ class SecurityReviewService {
   }
 
   async addSecurityLabel(octokit, prNumber) {
-    await octokit.rest.issues.addLabels({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      issue_number: prNumber,
-      labels: ["security-review-required"],
-    });
+    try {
+      // Verify if label exists
+      const { data: labels } = await octokit.rest.issues.listLabelsForRepo({
+        owner: this.context.repo.owner,
+        repo: this.context.repo.repo,
+      });
+      
+      const labelExists = labels.some(label => label.name === "security-review-required");
+      if (!labelExists) {
+        await octokit.rest.issues.createLabel({
+          owner: this.context.repo.owner,
+          repo: this.context.repo.repo,
+          name: "security-review-required",
+          color: "d73a4a",
+          description: "Requires security review before merge"
+        });
+      }
+
+      await octokit.rest.issues.addLabels({
+        owner: this.context.repo.owner,
+        repo: this.context.repo.repo,
+        issue_number: prNumber,
+        labels: ["security-review-required"],
+      });
+    } catch (error) {
+      core.error(`Failed to add security label: ${error.message}`);
+      throw error;
+    }
   }
 
   formatReview(review, slackThreadUrl) {
