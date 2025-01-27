@@ -4,7 +4,7 @@ on:
     secrets:
       SLACK_TOKEN:
         required: true
-      GITHUB_TOKEN:  # Changed from CROSS_REPO_TOKEN
+      CROSS_REPO_TOKEN:
         required: true
       OPENAI_API_KEY:
         required: true
