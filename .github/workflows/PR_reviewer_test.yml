@@ -1,24 +1,59 @@
-name: PR Reviewer Test Workflow 
-
+name: Pull Request Reviewer Test
 on:
-  pull_request:  
-    branches:
-      - feature-sc-60183-pr-reviewer-enhancements
-
+  workflow_call:
+    secrets:
+      SLACK_TOKEN:
+        required: true
+      CROSS_REPO_TOKEN:
+        required: true
+      OPENAI_API_KEY:
+        required: true
+      SLACK_CHANNEL_GIT_SECURITY:
+        required: true
 jobs:
-  pr-review:
-    runs-on: ubuntu-latest
+  pr_reviewer_job:
+    runs-on: ubuntu-22.04
+    name: Security Review for Pull Requests
     steps:
-      - name: Checkout the .github repo
-        uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Checkout PR Review Project
+        uses: actions/checkout@v4
         with:
           repository: firefliesai/.github
-          path: firefliesai
-          ref: feature-sc-60183-pr-reviewer-enhancements
+          path: .github
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            .github/.github/scripts/PR_reviewer.js
+            .github/scripts/pr-review/
 
-      - name: Run PR Reviewer Script
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
         run: |
-          node firefliesai/.github/.github/scripts/PR_reviewer.js
+          cd .github/scripts/pr-review
+          npm install
+
+      - name: Run PR Reviewer
+        uses: actions/github-script@v6
+        env:
+          GTP_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_CHANNEL_GIT_SECURITY: ${{ secrets.SLACK_CHANNEL_GIT_SECURITY }}
+        with:
+          script: |
+            const { reviewPR } = require('./.github/scripts/pr-review/index.js');
+            
+            // Validate environment
+            const requiredEnvVars = ['GITHUB_TOKEN', 'OPENAI_API_KEY', 'SLACK_TOKEN', 'SLACK_CHANNEL_GIT_SECURITY'];
+            for (const env of requiredEnvVars) {
+              if (!process.env[env]) {
+                throw new Error(`${env} is not set`);
+              }
+            }
+            
+            await reviewPR(context);
