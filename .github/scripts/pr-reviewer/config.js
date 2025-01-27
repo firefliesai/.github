@@ -9,7 +9,7 @@ module.exports = {
     REVIEW: {
       temperature: 1,
       max_completion_tokens: 2048,
-      defaultModel: "o1-mini",
+      defaultModel: "o1",
     },
     PRIORITY: {
       defaultModel: "gpt-4",
