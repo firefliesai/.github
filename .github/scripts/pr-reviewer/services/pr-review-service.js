@@ -55,6 +55,7 @@ class PRReviewService {
 
       if (priority === "high" && slackResult.success) {
         await securityService.createReview(
+          this.context || clients.getGitHubContext(),
           review,
           slackResult.threadUrl,
           prNumber,
