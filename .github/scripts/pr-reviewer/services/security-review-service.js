@@ -17,8 +17,8 @@ class SecurityReviewService {
 
   async createComment(octokit, review, slackThreadUrl, prNumber) {
     await octokit.rest.issues.createComment({
-      owner: this.context.repo.owner,
-      repo: this.context.repo.repo,
+      owner: this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+      repo: this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
       issue_number: prNumber,
       body: this.formatReview(review, slackThreadUrl),
     });
@@ -26,20 +26,22 @@ class SecurityReviewService {
 
   async addSecurityLabel(octokit, prNumber) {
     try {
-      // Verify if label exists
       const { data: labels } = await octokit.rest.issues.listLabelsForRepo({
-        owner: this.context.repo.owner,
-        repo: this.context.repo.repo,
+        owner:
+          this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+        repo: this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
       });
-      
-      const labelExists = labels.some(label => label.name === "security-review-required");
+
+      const labelExists = labels.some(
+        (label) => label.name === "security-review-required",
+      );
       if (!labelExists) {
         await octokit.rest.issues.createLabel({
           owner: this.context.repo.owner,
           repo: this.context.repo.repo,
           name: "security-review-required",
           color: "d73a4a",
-          description: "Requires security review before merge"
+          description: "Requires security review before merge",
         });
       }
 
