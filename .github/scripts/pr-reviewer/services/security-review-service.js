@@ -1,17 +1,13 @@
 const outdent = require("outdent");
-const { context } = require("@actions/github");
 const core = require("@actions/core");
 const clients = require("../clients");
 
 class SecurityReviewService {
   async createReview(context, review, slackThreadUrl, prNumber) {
     this.context = context;
-
     const octokit = await clients.initOctokit();
-
     await this.createComment(octokit, review, slackThreadUrl, prNumber);
     await this.addSecurityLabel(octokit, prNumber);
-
     core.info(`Created security review for PR #${prNumber}`);
   }
 
@@ -35,10 +31,13 @@ class SecurityReviewService {
       const labelExists = labels.some(
         (label) => label.name === "security-review-required",
       );
+
       if (!labelExists) {
         await octokit.rest.issues.createLabel({
-          owner: this.context.repo.owner,
-          repo: this.context.repo.repo,
+          owner:
+            this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+          repo:
+            this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
           name: "security-review-required",
           color: "d73a4a",
           description: "Requires security review before merge",
@@ -46,8 +45,9 @@ class SecurityReviewService {
       }
 
       await octokit.rest.issues.addLabels({
-        owner: this.context.repo.owner,
-        repo: this.context.repo.repo,
+        owner:
+          this.context?.repo?.owner || clients.getGitHubContext().repo.owner,
+        repo: this.context?.repo?.repo || clients.getGitHubContext().repo.repo,
         issue_number: prNumber,
         labels: ["security-review-required"],
       });
@@ -60,15 +60,12 @@ class SecurityReviewService {
   formatReview(review, slackThreadUrl) {
     return outdent`
       🚨 **High Priority Security Concerns Detected**
-
       Our automated security review has identified critical concerns that should be addressed in this PR.
-
       ### Security Review Findings
       <details>
       <summary>Security Review Details</summary>
       ${review}
       </details>
-
       ### Required Actions
       1. Review the security findings detailed above ⚠️
       2. Implement necessary changes to address the identified security concerns
@@ -76,7 +73,6 @@ class SecurityReviewService {
         - Provide context about these security findings
         - Discuss your planned fixes
         - Get additional guidance if needed
-
       ⚠️ **Important:** This PR should not be merged until all security concerns have been properly addressed and verified.
     `;
   }
