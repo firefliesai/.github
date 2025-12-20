@@ -1,6 +1,28 @@
 ## What does this PR do?
 
-xxx
+<!--
+Use this section to provide a brief description of the changes in this PR.
+This will be used to generate the #feature-rollout message. It should be easy to understand for non-technical stakeholders.
+It must only be in bullet points.
+It must be filled
+It should be concise and to the point.
+
+❌ Bad example:
+Paragraph text
+
+- Fix cannot read property 'length' of undefined
+
+✅ Good example:
+- Fix team's page crashing due to missing fetch the user data
+
+PS: Don't go beyond 3 bullet points.
+-->
+
+<!--
+## Technical Details
+
+Use this section to provide more technical details about the changes in this PR in case needed.
+-->
 
 ## Type of change
 
